@@ -1,0 +1,19 @@
+{
+  "name": "deathcubes",
+  "version": "1.0.0",
+  "description": "First browser game to test myself",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Deathcube/Deathcubes.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Deathcube/Deathcubes/issues"
+  },
+  "homepage": "https://github.com/Deathcube/Deathcubes#readme"
+}
