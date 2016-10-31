@@ -13,6 +13,7 @@ console.log("Hello from server!");
 
 var SOCKET_LIST = {};
 
+/*
 function extend(Child, Parent) {
    var F = function() { };
    F.prototype = Parent.prototype;
@@ -105,11 +106,60 @@ var Player = function (id) {
    return this;
 };
 extend(Player, Entity);
+*/
 
+var Entity  = function () {
+   var self = {
+      x:250,
+      y:250,
+      spdX:0,
+      spdY:0,
+      id:""
+   };
+   self.update = function () {
+      self.updatePosition();
+   };
+   self.updatePosition = function () {
+      self.x += self.spdX;
+      self.y += self.spdY;
+   };
+   
+   return self;
+};
+
+var Player = function (id) {
+  var self = Entity();
+   self.id = id;
+   self.number = "" + Math.floor(10 * Math.random());
+   self.pressingRight = false;
+   self.pressingLeft = false;
+   self.pressingUp = false;
+   self.pressingDown = false;
+   self.maxSpd = 10;
+
+   self.update = function () {
+      self.updatePosition();
+   };
+
+   self.updatePosition = function () {
+      if(self.pressingLeft){
+         self.x -= self.maxSpd;
+      } else if (self.pressingRight) {
+         self.x += self.maxSpd;
+      } else if (self.pressingUp) {
+         self.y -= self.maxSpd;
+      } else if (self.pressingDown) {
+         self.y += self.maxSpd;
+      }
+   };
+   Player.list[id] = self;
+   return self;
+
+};
 Player.list = {};
 
 
-Player.prototype.onConnect = function (socket) {
+Player.onConnect = function (socket) {
    var player = Player(socket.id);
 
    socket.on('keyPress', function (data) {
@@ -124,11 +174,11 @@ Player.prototype.onConnect = function (socket) {
    });
 };
 
-Player.prototype.onDisconnect = function (socket) {
+Player.onDisconnect = function (socket) {
    delete Player.list[socket.id];
 };
 
-Player.prototype.update = function () {
+Player.update = function () {
    var pack = [];
    for(var i in Player.list){
       var player = Player.list[i];
@@ -150,17 +200,17 @@ io.sockets.on('connection', function (socket) {
    socket.id = Math.random();
    SOCKET_LIST[socket.id] = socket;
 
-   Player.prototype.onConnect(socket);
+   Player.onConnect(socket);
 
    socket.on('disconnect', function () {
       delete SOCKET_LIST[socket.id];
-      Player.prototype.onDisconnect(socket);
+      Player.onDisconnect(socket);
    });
 });
 
 
 setInterval(function () {
-   var pack = Player.prototype.update();
+   var pack = Player.update();
    for(var i in SOCKET_LIST){
       var socket = SOCKET_LIST[i];
       socket.emit('positions', pack);
