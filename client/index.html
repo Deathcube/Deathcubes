@@ -1,10 +1,10 @@
 Hello user!<br>
 <canvas id="field" width="500" height="500" style="border:1px solid #000000;"></canvas>
 
-<!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script src="/client/socket.io.js"></script>
 <script>
-    var socket = io.connect('http://localhost:2000');
+    var socket = io();//io.connect('http://localhost:2000');
     var field = document.getElementById("field").getContext("2d");
 
     socket.on('positions', function (data) {
