@@ -9,8 +9,11 @@ Hello user!<br>
 
     socket.on('positions', function (data) {
         field.clearRect(0,0,500,500);
-        for(var i = 0; i < data.length; i++){
-            field.fillRect(data[i].x,data[i].y,25,25);
+        for(var i = 0; i < data.players.length; i++){
+            field.strokeRect(data.players[i].x,data.players[i].y,20,20);
+        }
+        for(var i = 0; i < data.bullets.length; i++){
+            field.fillRect(data.bullets[i].x-5,data.bullets[i].y-5,10,10);
         }
     });
 
