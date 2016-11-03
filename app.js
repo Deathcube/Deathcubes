@@ -111,25 +111,23 @@ function extend(Child, Parent) {
 
 function Entity(id) {
    this.id = id;
-   this.X = 0;
-   this.Y = 0;
+   this.X = 250;
+   this.Y = 250;
    this.spdX = 0;
    this.spdY = 0;
 }
 
-Entity.prototype = {
-   update: function() {
-      this.updatePosition();
-   },
-   updatePosition: function(){
-      this.X += this.spdX;
-      this.Y += this.spdY;
-   }
+Entity.prototype.update = function () {
+   this.updatePosition();
 };
 
+Entity.prototype.updatePosition = function () {
+   this.X += this.spdX;
+   this.Y += this.spdY;
+};
 
 function Player(id){
-   Entity.prototype.id = id;
+   Entity.call(this, id);
    this.number = "" + Math.floor(10 * Math.random());
    this.pressingRight = false;
    this.pressingLeft = false;
@@ -140,43 +138,44 @@ function Player(id){
 
    Player.list[id] = this;
 }
-
-Player.prototype = {
-   update: function () {
-      this.updateSpd();
-      Entity.prototype.update.apply(this);
-   },
-   updateSpd: function (){
-      if(this.pressingLeft)
-         this.spdX = -this.maxSpd*this.spd;
-      else if(this.pressingRight)
-         this.spdX = this.maxSpd*this.spd;
-      else
-         this.spdX = 0;
-
-      if(this.pressingUp)
-         this.spdY = -this.maxSpd*this.spd;
-      else if(this.pressingDown)
-         this.spdY = this.maxSpd*this.spd;
-      else
-         this.spdY = 0;
-   }
-};
-
 Player.list = {};
 
 extend(Player, Entity);
+
+Player.prototype.update = function () {
+   this.updateSpd();
+   Entity.prototype.update.apply(this);
+};
+
+Player.prototype.updateSpd = function () {
+   if(this.pressingLeft && this.X>0)
+      this.spdX = -this.maxSpd*this.spd;
+   else if(this.pressingRight  && this.X<475)
+      this.spdX = this.maxSpd*this.spd;
+   else
+      this.spdX = 0;
+
+   if(this.pressingUp  && this.Y>0)
+      this.spdY = -this.maxSpd*this.spd;
+   else if(this.pressingDown  && this.Y<475)
+      this.spdY = this.maxSpd*this.spd;
+   else
+      this.spdY = 0;
+};
 
 
 function playerConnect(socket) {
    var player = new Player(socket.id);
 
    socket.on('keyPress', function (data) {
-      switch (data.inputId){
-         case 'left' : player.pressingLeft = data.state; break;
-         case 'right' : player.pressingRight = data.state; break;
-         case 'up' : player.pressingUp = data.state; break;
-         case 'down' : player.pressingDown = data.state; break;
+      if (data.inputId === 'left'){
+         player.pressingLeft = data.state;
+      } else if (data.inputId === 'right'){
+         player.pressingRight = data.state;
+      } else if (data.inputId === 'up'){
+         player.pressingUp = data.state;
+      } else if (data.inputId === 'down'){
+         player.pressingDown = data.state;
       }
    });
 }
@@ -189,6 +188,7 @@ function playerUpdate(){
    var pack = [];
    for(var i in Player.list){
       var player = Player.list[i];
+
       player.update();
 
       pack.push({
