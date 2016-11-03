@@ -121,6 +121,8 @@ Bullet.prototype.update = function () {
 
 
 
+var DEBUG = true;
+
 // server functions
 
 function onPlayerConnect(socket) {
@@ -136,6 +138,23 @@ function onPlayerConnect(socket) {
       } else if (data.inputId === 'down'){
          player.pressingDown = data.state;
       }
+   });
+
+   socket.on('chatMsgToAll', function (data) {
+      if(!data)
+         return;
+
+      for(var i in SOCKET_LIST){
+         SOCKET_LIST[i].emit('chatMsgSend', Player.list[socket.id].number+': '+ data);
+      }
+   });
+
+   socket.on('chatMsgToServer', function (data) {
+      if(!data || !DEBUG)
+         return;   
+      var _eval = eval(data);
+      socket.emit('serverMsg', _eval);
+
    });
 }
 
@@ -161,7 +180,7 @@ function playersUpdate(){
 }
 
 function bulletsUpdate(){
-   if(Math.random() < 0.5)
+   if(Math.random() < 0.2)
       new Bullet(Math.random()*360);
 
 
