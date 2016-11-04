@@ -1,32 +1,94 @@
 Hello user!<br>
-<canvas id="field" width="500" height="500" style="border:1px solid #000000;"></canvas>
 
-<div id="chat-text" style="width:500px;height:100px;overflow-y: scroll;"></div>
+<style>
+    canvas, #sign{
+        position:absolute;
+        top: 50%;
+        left:50%;
+        transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        -moz-transform: translate(-50%, -50%);
+        -webkit-transform: translate(-50%, -50%);
+    }
+    #chat{
+        position:absolute;
+        top: 15%;
+        left:70%;
+        overflow-y: scroll;
+    }
+</style>
 
-<form id="chat-form">
-    <input id="chat-input" type="text" style="width:500px">
-</form>
+<div id="sign">
+    Username: <input id="sign-username" type="text"><br>
+    Password: <input id="sign-password" type="password">
+    <button id="signIn">Sign In</button>
+    <button id="signUp">Sign Up</button>
+</div>
 
+<div id="game" style="display: none;">
+    <canvas id="field" width="500" height="500" style="border:1px solid #000000;"></canvas>
+    <div id="chat">
+        <div id="chat-text" style="width:300px;height:500px;"></div>
 
-<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+        <form id="chat-form">
+            <input id="chat-input" type="text" style="width:80%">
+        </form>
+    </div>
+</div>
+
+<!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
 <script src="/client/socket.io.js"></script>
 <script>
+    var socket = io();//io.connect('http://localhost:2000');
+    var game = document.getElementById("game");
+
+
+    var sign = document.getElementById("sign");
+    var signIn = document.getElementById("signIn");
+    var signUp = document.getElementById("signUp");
+    var signUsername = document.getElementById("sign-username");
+    var signPass = document.getElementById("sign-password");
+
+    signIn.onclick = function () {
+        socket.emit('signInPack', {username:signUsername.value, pass:signPass.value});
+    };
+    socket.on('signInResponse', function (data) {
+      if (data.success){
+          sign.style.display = 'none';
+          game.style.display = 'inline-block';
+      } else
+          alert('Sign in unsuccessfull.');
+    });
+
+    signUp.onclick = function () {
+        socket.emit('signUpPack', {username:signUsername.value, pass:signPass.value});
+    };
+    socket.on('signUpResponse', function (data) {
+        if (data.success){
+            sign.style.display = 'none';
+            game.style.display = 'inline-block';
+        } else
+            alert('Sign up unsuccessfull.');
+    });
+
     var chatText = document.getElementById("chat-text");
     var chatForm = document.getElementById("chat-form");
     var chatInput = document.getElementById("chat-input");
 
 
 
-    var socket = io();//io.connect('http://localhost:2000');
+
     var field = document.getElementById("field").getContext("2d");
 
     socket.on('positions', function (data) {
+        console.log(data.players.length);
         field.clearRect(0,0,500,500);
         for(var i = 0; i < data.players.length; i++){
-            field.strokeRect(data.players[i].x,data.players[i].y,20,20);
+            field.fillRect(data.players[i].x,data.players[i].y,20,20);
         }
         for(var i = 0; i < data.bullets.length; i++){
-            field.fillRect(data.bullets[i].x-5,data.bullets[i].y-5,10,10);
+            field.fillRect(data.bullets[i].x+5,data.bullets[i].y+5,2,2);
         }
     });
 
@@ -70,4 +132,22 @@ Hello user!<br>
             socket.emit('keyPress', {inputId:'up', state:false});
 
     };
+
+    document.onmousedown = function (event) {
+        socket.emit('keyPress', {inputId:'attack', state:true});
+    };
+
+    document.onmouseup = function (event) {
+        socket.emit('keyPress', {inputId:'attack', state:false});
+    };
+
+    document.onmousemove = function (event) {
+        var x = -700 + event.clientX;
+        var y = -470 + event.clientY;
+        var angle = Math.atan2(y,x)/Math.PI*180;
+        socket.emit('keyPress', {inputId:'mouseAngle', state:angle});
+    };
+
+
+
 </script>

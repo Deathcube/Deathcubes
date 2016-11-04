@@ -45,6 +45,9 @@ Entity.prototype.updatePosition = function () {
    this.Y += this.spdY;
 };
 
+Entity.prototype.getDistance = function (point) {
+   return Math.sqrt(Math.pow(this.X-point.X,2) + Math.pow(this.Y - point.Y,2));
+};
 
 
 
@@ -58,6 +61,8 @@ function Player(id){
    this.pressingLeft = false;
    this.pressingUp = false;
    this.pressingDown = false;
+   this.pressingAttack = false;
+   this.mouseAngle = 0;
    this.spd = 1;
    this.maxSpd = 10;
 
@@ -71,6 +76,9 @@ extend(Player, Entity);
 Player.prototype.update = function () {
    this.updateSpd();
    Entity.prototype.update.apply(this);
+
+   if(this.pressingAttack)
+      this.shoot(this.mouseAngle);
 };
 
 Player.prototype.updateSpd = function () {
@@ -89,18 +97,25 @@ Player.prototype.updateSpd = function () {
       this.spdY = 0;
 };
 
+Player.prototype.shoot = function (angle) {
+      var bullet = new Bullet(this.id, angle);
+      bullet.X = this.X;
+      bullet.Y = this.Y;
+};
 
 
 // Bullet class with functions extends from Entity
 
-function Bullet(angle){
+function Bullet(parent, angle){
    this.id = Math.random();
+   this.parent = parent;
    Entity.call(this, this.id);
    this.maxSpd = 10;
    this.spdX = Math.cos(angle/180*Math.PI) * this.maxSpd;
    this.spdY = Math.sin(angle/180*Math.PI) * this.maxSpd;
    this.toRemove = false;
    this.timer = 0;
+   this.timerShoot = 0;
 
    Bullet.list[this.id] = this;
 }
@@ -113,17 +128,23 @@ Bullet.prototype.update = function () {
    if(this.timer++ > 100)
       this.toRemove = true;
    Entity.prototype.update.apply(this);
+
+   for (var i in Player.list){
+      var _player = Player.list[i];
+      if(this.getDistance(_player) < 20 && this.parent != _player.id){
+         this.toRemove = true;
+      }
+   }
+
 };
 
 
 
 
 
-
+// server functions
 
 var DEBUG = true;
-
-// server functions
 
 function onPlayerConnect(socket) {
    var player = new Player(socket.id);
@@ -137,7 +158,12 @@ function onPlayerConnect(socket) {
          player.pressingUp = data.state;
       } else if (data.inputId === 'down'){
          player.pressingDown = data.state;
+      } else if (data.inputId === 'attack'){
+         player.pressingAttack = data.state;
+      } else if (data.inputId === 'mouseAngle'){
+         player.mouseAngle = data.state;
       }
+
    });
 
    socket.on('chatMsgToAll', function (data) {
@@ -151,7 +177,7 @@ function onPlayerConnect(socket) {
 
    socket.on('chatMsgToServer', function (data) {
       if(!data || !DEBUG)
-         return;   
+         return;
       var _eval = eval(data);
       socket.emit('serverMsg', _eval);
 
@@ -159,6 +185,7 @@ function onPlayerConnect(socket) {
 }
 
 function onPlayerDisconnect(socket) {
+   console.log("Player disconnected " + socket.id );
    delete Player.list[socket.id];
 }
 
@@ -170,9 +197,10 @@ function playersUpdate(){
       player.update();
 
       players.push({
-         x: player.X,
-         y: player.Y,
-         number: player.number
+         x        : player.X,
+         y        : player.Y,
+         socketID : player.id,
+         number   : player.number
       });
    }
 
@@ -180,23 +208,34 @@ function playersUpdate(){
 }
 
 function bulletsUpdate(){
-   if(Math.random() < 0.2)
-      new Bullet(Math.random()*360);
-
-
    var bullets = [];
    for(var i in Bullet.list){
       var bullet = Bullet.list[i];
+      if(bullet.toRemove)
+         delete Bullet.list[i];
+      else{
+         bullet.update();
 
-      bullet.update();
-
-      bullets.push({
-         x: bullet.X,
-         y: bullet.Y
-      });
+         bullets.push({
+            x: bullet.X,
+            y: bullet.Y
+         });
+      }
    }
 
    return bullets;
+}
+
+function userNameExist(data, cb) {
+   cb(data.username);
+}
+
+function isValidPassword(data, cb) {
+   cb(data.pass);
+}
+
+function addUser(data, cb) {
+   cb(data);
 }
 
 
@@ -205,7 +244,32 @@ io.sockets.on('connection', function (socket) {
    socket.id = Math.random();
    SOCKET_LIST[socket.id] = socket;
 
-   onPlayerConnect(socket);
+   socket.on('signInPack', function (data) {
+      isValidPassword(data, function (res) {
+         if(1||res){
+            onPlayerConnect(socket);
+            socket.emit('signInResponse', {success:true});
+         } else {
+            socket.emit('signInResponse', {success:false});
+         }
+      });
+
+   });
+
+   socket.on('signUpPack', function (data) {
+      userNameExist(data, function (res) {
+         if(1||res){
+            addUser(data, function () {
+               onPlayerConnect(socket);
+               socket.emit('signUpResponse', {success:true});
+            });
+         } else {
+            socket.emit('signUpResponse', {success:false});
+         }
+      });
+   });
+
+
 
    socket.on('disconnect', function () {
       delete SOCKET_LIST[socket.id];
