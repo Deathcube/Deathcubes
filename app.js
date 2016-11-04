@@ -110,7 +110,7 @@ function Bullet(parent, angle){
    this.id = Math.random();
    this.parent = parent;
    Entity.call(this, this.id);
-   this.maxSpd = 10;
+   this.maxSpd = 5;
    this.spdX = Math.cos(angle/180*Math.PI) * this.maxSpd;
    this.spdY = Math.sin(angle/180*Math.PI) * this.maxSpd;
    this.toRemove = false;
