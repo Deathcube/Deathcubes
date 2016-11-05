@@ -1,4 +1,4 @@
-Hello user!<br>
+Hello :)<br>
 
 <style>
     canvas, #sign{
@@ -43,54 +43,11 @@ Hello user!<br>
     var socket = io();//io.connect('http://localhost:2000');
     var game = document.getElementById("game");
 
-
-    var sign = document.getElementById("sign");
-    var signIn = document.getElementById("signIn");
-    var signUp = document.getElementById("signUp");
-    var signUsername = document.getElementById("sign-username");
-    var signPass = document.getElementById("sign-password");
-
-    signIn.onclick = function () {
-        socket.emit('signInPack', {username:signUsername.value, pass:signPass.value});
-    };
-    socket.on('signInResponse', function (data) {
-      if (data.success){
-          sign.style.display = 'none';
-          game.style.display = 'inline-block';
-      } else
-          alert('Sign in unsuccessfull.');
-    });
-
-    signUp.onclick = function () {
-        socket.emit('signUpPack', {username:signUsername.value, pass:signPass.value});
-    };
-    socket.on('signUpResponse', function (data) {
-        if (data.success){
-            sign.style.display = 'none';
-            game.style.display = 'inline-block';
-        } else
-            alert('Sign up unsuccessfull.');
-    });
+    // chat
 
     var chatText = document.getElementById("chat-text");
     var chatForm = document.getElementById("chat-form");
     var chatInput = document.getElementById("chat-input");
-
-
-
-
-    var field = document.getElementById("field").getContext("2d");
-
-    socket.on('positions', function (data) {
-        console.log(data.players.length);
-        field.clearRect(0,0,500,500);
-        for(var i = 0; i < data.players.length; i++){
-            field.fillRect(data.players[i].x,data.players[i].y,20,20);
-        }
-        for(var i = 0; i < data.bullets.length; i++){
-            field.fillRect(data.bullets[i].x+5,data.bullets[i].y+5,7,7);
-        }
-    });
 
     socket.on('chatMsgSend', function (data) {
         chatText.innerHTML += '<div>' + data + '</div>';
@@ -108,6 +65,194 @@ Hello user!<br>
             socket.emit('chatMsgToAll', chatInput.value);
         chatInput.value = '';
     };
+
+
+    // login page
+
+    var sign = document.getElementById("sign");
+    var signIn = document.getElementById("signIn");
+    var signUp = document.getElementById("signUp");
+    var signUsername = document.getElementById("sign-username");
+    var signPass = document.getElementById("sign-password");
+
+    signIn.onclick = function () {
+        socket.emit('signInPack', {username:signUsername.value, pass:signPass.value});
+    };
+    socket.on('signInResponse', function (data) {
+      if (data.success){
+          sign.style.display = 'none';
+          game.style.display = 'inline-block';
+      } else
+          alert('Username or password didn\'t match :(');
+    });
+
+    signUp.onclick = function () {
+        if(signUsername.value && signPass.value)
+            socket.emit('signUpPack', {username:signUsername.value, pass:signPass.value});
+        else
+            alert('You should enter name and password');
+    };
+    socket.on('signUpResponse', function (data) {
+        if (data.success){
+            sign.style.display = 'none';
+            game.style.display = 'inline-block';
+        } else
+            alert('Sorry, but this username is already exist :(');
+    });
+
+
+
+
+
+
+
+    // perfomance
+
+    var field = document.getElementById("field").getContext("2d");
+
+    function extend(Child, Parent) {
+        var Temp = function(){};
+        Temp.prototype = Parent.prototype;
+        Child.prototype = new Temp();
+        Child.prototype.constructor = Child;
+    }
+
+
+    // an entity
+
+    function Entity(initPack) {
+        this.id = initPack.id;
+        this.X = initPack.x;
+        this.Y = initPack.y;
+    }
+
+
+
+
+
+
+    // player
+
+    function Player(initPack){
+        Entity.call(this, initPack);
+        this.name = initPack.name;
+        this.hp = initPack.hp;
+        this.hpMax = initPack.hpMax;
+        this.score = initPack.score;
+
+        Player.list[initPack.id] = this;
+    }
+
+    Player.list = {};
+
+    extend(Player, Entity);
+
+
+    Player.prototype.draw = function () {
+        var hpWidth = 25 * this.hp / this.hpMax;
+        field.fillText(this.name, this.X, this.Y - 8);
+        field.fillRect(this.X - hpWidth/2 + 10, this.Y - 5, hpWidth, 3);
+        field.strokeRect(this.X, this.Y, 20, 20);
+
+        field.fillText(this.score, this.X, this.Y + 30);
+    };
+
+
+
+
+
+
+
+    // bullet
+
+    function Bullet(initPack){
+        Entity.call(this, initPack);
+
+        Bullet.list[initPack.id] = this;
+    }
+
+    Bullet.list = {};
+
+    extend(Bullet, Entity);
+
+
+    Bullet.prototype.draw = function () {
+        field.fillRect(this.X + 5, this.Y + 5, 7, 7);
+    };
+
+
+
+
+    // init pack
+    // when new player created - sending all the data
+
+    socket.on('init', function (data) {
+        field.clearRect(0,0,500,500);
+        for(var i = 0; i < data.players.length; i++){
+            new Player(data.players[i]);
+        }
+        for(var i = 0; i < data.bullets.length; i++){
+            new Bullet(data.bullets[i]);
+        }
+    });
+
+
+    // update pack
+    // update the difference, so updating not all of the data
+
+    socket.on('update', function (data) {
+        for(var i = 0; i < data.players.length; i++){
+            var pack = data.players[i];
+            var player = Player.list[pack.id];
+            if(player){
+                if (pack.x !== undefined)
+                    player.X = pack.x;
+                if (pack.y !== undefined)
+                    player.Y = pack.y;
+                if (pack.hp !== undefined)
+                    player.hp = pack.hp;
+                if (pack.score !== undefined)
+                    player.score = pack.score;
+            }
+        }
+        for(var i = 0; i < data.bullets.length; i++){
+            var pack = data.bullets[i];
+            var _bullet = Bullet.list[pack.id];
+            if(_bullet){
+                if (pack.x !== undefined)
+                    _bullet.X = pack.x;
+                if (pack.y !== undefined)
+                    _bullet.Y = pack.y;
+            }
+        }
+    });
+
+    // remove pack
+    // removing procedure, so we sending an id
+
+    socket.on('remove', function (data) {
+        for(var i = 0; i < data.players.length; i++){
+            delete Player.list[data.players[i]];
+        }
+        for(var i = 0; i < data.bullets.length; i++){
+            delete Bullet.list[data.bullets[i]];
+        }
+    });
+
+
+    // perform all the time
+
+    setInterval(function () {
+        field.clearRect(0,0,500,500);
+        for(var i in Player.list){
+            Player.list[i].draw();
+        }
+
+        for(var i in Bullet.list){
+            Bullet.list[i].draw();
+        }
+    }, 40); // 25 times per minute
+
 
     document.onkeydown = function (event) {
         if(event.keyCode === 68)
@@ -147,7 +292,5 @@ Hello user!<br>
         var angle = Math.atan2(y,x)/Math.PI*180;
         socket.emit('keyPress', {inputId:'mouseAngle', state:angle});
     };
-
-
 
 </script>
