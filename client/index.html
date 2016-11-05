@@ -42,6 +42,8 @@ Hello :)<br>
 <script>
     var socket = io();//io.connect('http://localhost:2000');
     var game = document.getElementById("game");
+    var WIDTH = 500;
+    var HEIGHT = 500;
 
     // chat
 
@@ -106,6 +108,17 @@ Hello :)<br>
 
 
 
+
+    // Images
+
+    var Img = {};
+    Img.player = new Image();
+    Img.player.src = '/client/images/ship.png';
+    Img.bullet = new Image();
+    Img.bullet.src = '/client/images/stone-sphere.png';
+    Img.map = new Image();
+    Img.map.src = '/client/images/map.jpeg';
+
     // perfomance
 
     var field = document.getElementById("field").getContext("2d");
@@ -149,12 +162,24 @@ Hello :)<br>
 
 
     Player.prototype.draw = function () {
-        var hpWidth = 25 * this.hp / this.hpMax;
-        field.fillText(this.name, this.X, this.Y - 8);
-        field.fillRect(this.X - hpWidth/2 + 10, this.Y - 5, hpWidth, 3);
-        field.strokeRect(this.X, this.Y, 20, 20);
+        var hpWidth = 30 * this.hp / this.hpMax;
 
-        field.fillText(this.score, this.X, this.Y + 30);
+        var x = this.X - Player.list[selfId].X + WIDTH/2;
+        var y = this.Y - Player.list[selfId].Y + HEIGHT/2;
+
+        field.fillStyle = 'red';
+        field.font = '20px Arial';
+        field.fillText(this.name, x-15, y - 35);
+        field.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
+
+        var imgWidth = Img.player.width/15;
+        var imgHeight = Img.player.height/15;
+
+        field.drawImage(Img.player, 0, 0,
+                        Img.player.width, Img.player.height,
+                        x-imgWidth/2,y-imgHeight/2,
+                        imgWidth, imgHeight
+        );
     };
 
 
@@ -177,7 +202,18 @@ Hello :)<br>
 
 
     Bullet.prototype.draw = function () {
-        field.fillRect(this.X + 5, this.Y + 5, 7, 7);
+        var imgWidth = Img.bullet.width/3;
+        var imgHeight = Img.bullet.height/3;
+
+        var x = this.X - Player.list[selfId].X + WIDTH/2;
+        var y = this.Y - Player.list[selfId].Y + HEIGHT/2;
+
+
+        field.drawImage(Img.bullet, 0, 0,
+                Img.bullet.width, Img.bullet.height,
+                x-imgWidth/2,y-imgHeight/2,
+                imgWidth, imgHeight
+        );
     };
 
 
@@ -186,8 +222,11 @@ Hello :)<br>
     // init pack
     // when new player created - sending all the data
 
+
+    var selfId = null;
     socket.on('init', function (data) {
-        field.clearRect(0,0,500,500);
+        if(data.selfId)
+            selfId = data.selfId;
         for(var i = 0; i < data.players.length; i++){
             new Player(data.players[i]);
         }
@@ -239,11 +278,36 @@ Hello :)<br>
         }
     });
 
+    
+
+
+
+
+
+    // useful functions
+    
+    function drawMap() {
+        var x = WIDTH/2 - Player.list[selfId].X;
+        var y = HEIGHT/2 - Player.list[selfId].Y;
+        var imgWidth = Img.map.width/3;
+        var imgHeight = Img.map.height/3;
+        field.drawImage(Img.map,x,y,Img.map.width,Img.map.height,0,0,imgWidth,imgHeight);
+    }
+
+    function drawScore() {
+        field.fillStyle = 'white';
+        field.font = '30px Arial';
+        field.fillText(Player.list[selfId].score,0,30);
+    }
 
     // perform all the time
 
     setInterval(function () {
+        if(!selfId)
+            return;
         field.clearRect(0,0,500,500);
+        drawMap();
+        drawScore();
         for(var i in Player.list){
             Player.list[i].draw();
         }

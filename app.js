@@ -105,9 +105,10 @@ function Player(id, name){
    this.mouseAngle = 0;
    this.spd = 0.5;
    this.maxSpd = 10;
-   this.hp = 10;
-   this.hpMax = 10;
+   this.hp = 1000;
+   this.hpMax = 1000;
    this.score = 0;
+   this.damage = 49;
 
    Player.list[id] = this;
 
@@ -133,17 +134,17 @@ Player.prototype.update = function () {
 };
 
 Player.prototype.updateSpd = function () {
-   if(this.pressingLeft && this.X>0)
-      this.spdX = -this.maxSpd*this.spd;
-   else if(this.pressingRight  && this.X<475)
+   if(this.pressingLeft)
       this.spdX = this.maxSpd*this.spd;
+   else if(this.pressingRight)
+      this.spdX = -this.maxSpd*this.spd;
    else
       this.spdX = 0;
 
-   if(this.pressingUp  && this.Y>0)
-      this.spdY = -this.maxSpd*this.spd;
-   else if(this.pressingDown  && this.Y<475)
+   if(this.pressingUp)
       this.spdY = this.maxSpd*this.spd;
+   else if(this.pressingDown)
+      this.spdY = -this.maxSpd*this.spd;
    else
       this.spdY = 0;
 };
@@ -228,7 +229,7 @@ Bullet.prototype.update = function () {
    for (var i in Player.list){
       var _player = Player.list[i];
       if(this.getDistance(_player) < 20 && this.parent != _player.id){
-         _player.hp -= 1;
+         _player.hp -= 49;
 
          if(_player.hp <= 0){
             var shooter = Player.list[this.parent];
@@ -277,6 +278,11 @@ Bullet.prototype.getUpdatePack = function () {
 
 
 
+
+
+
+
+
 // server part for functions
 
 // this apply to debugging while chat(temporarily)
@@ -305,6 +311,7 @@ function onPlayerConnect(socket, name) {
    });
 
    socket.emit('init', {
+      selfId   : socket.id,
       players  : getAllPlayersInitPacks(),
       bullets  : getAllBulletsInitPacks()
    })
@@ -481,7 +488,7 @@ setInterval(function () {
       socket.emit('remove', removePack);
    }
    // avoiding duplications
-   initPack.players = [];
+   initPack.players = [];     
    initPack.bullets = [];
    removePack.players = [];
    removePack.bullets = [];
