@@ -51,12 +51,13 @@ function extend(Child, Parent) {
 
 // Base entity class for define base attributes and methods
 
-function Entity(id) {
-   this.id = id;
-   this.X = 250;
-   this.Y = 250;
+function Entity(args) {
+   this.id = args.id;
+   this.X = args.x ||250;
+   this.Y = args.y ||250;
    this.spdX = 0;
    this.spdY = 0;
+   this.map = 'blue';
 }
 
 
@@ -94,9 +95,9 @@ Entity.prototype.getDistance = function (point) {
 
 // Player class with functions extends from Entity
 
-function Player(id, name){
-   Entity.call(this, id);
-   this.name = name;
+function Player(args){
+   Entity.call(this, args);
+   this.name = args.name;
    this.pressingRight = false;
    this.pressingLeft = false;
    this.pressingUp = false;
@@ -110,7 +111,7 @@ function Player(id, name){
    this.score = 0;
    this.damage = 49;
 
-   Player.list[id] = this;
+   Player.list[args.id] = this;
 
    initPack.players.push(this.getInitPack());
 }
@@ -150,7 +151,7 @@ Player.prototype.updateSpd = function () {
 };
 
 Player.prototype.shoot = function (angle) {
-      var bullet = new Bullet(this.id, angle);
+      var bullet = new Bullet({parent:this.id, angle:angle});
       bullet.X = this.X;
       bullet.Y = this.Y;
 };
@@ -195,14 +196,14 @@ Player.prototype.getUpdatePack = function () {
 
 // Bullet class with functions. Extends from Entity
 
-function Bullet(parent, angle){
+function Bullet(args){
+   Entity.call(this, args);
    this.id = Math.random();
-   this.parent = parent;
-   Entity.call(this, this.id);
+   this.parent = args.parent;
    this.maxSpd = 10;
    this.speed = 1;
-   this.spdX = Math.cos(angle/180*Math.PI) * this.maxSpd * this.speed;
-   this.spdY = Math.sin(angle/180*Math.PI) * this.maxSpd * this.speed;
+   this.spdX = Math.cos(args.angle/180*Math.PI) * this.maxSpd * this.speed;
+   this.spdY = Math.sin(args.angle/180*Math.PI) * this.maxSpd * this.speed;
    this.toRemove = false;
    this.timer = 0;
 
@@ -291,7 +292,7 @@ var DEBUG = true;
 
 // handle player connecting
 function onPlayerConnect(socket, name) {
-   var player = new Player(socket.id, name);
+   var player = new Player({id:socket.id, name:name});
 
    socket.on('keyPress', function (data) {
       if (data.inputId === 'left'){

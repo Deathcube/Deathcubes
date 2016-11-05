@@ -202,8 +202,8 @@ Hello :)<br>
 
 
     Bullet.prototype.draw = function () {
-        var imgWidth = Img.bullet.width/3;
-        var imgHeight = Img.bullet.height/3;
+        var imgWidth = Img.bullet.width/2;
+        var imgHeight = Img.bullet.height/2;
 
         var x = this.X - Player.list[selfId].X + WIDTH/2;
         var y = this.Y - Player.list[selfId].Y + HEIGHT/2;
@@ -350,9 +350,17 @@ Hello :)<br>
         socket.emit('keyPress', {inputId:'attack', state:false});
     };
 
+    var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            _x = w.innerWidth || e.clientWidth || g.clientWidth,
+            _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
     document.onmousemove = function (event) {
-        var x = -700 + event.clientX;
-        var y = -470 + event.clientY;
+
+        var x = -_x/2 + event.clientX;
+        var y = -_y/2 + event.clientY;
         var angle = Math.atan2(y,x)/Math.PI*180;
         socket.emit('keyPress', {inputId:'mouseAngle', state:angle});
     };
