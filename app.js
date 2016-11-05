@@ -7,7 +7,7 @@ var mongojs = require('mongojs'); // this works with database
 // this variables are main in application and use in general
 var app = express();
 var serv = require('http').Server(app);
-var db = mongojs('localhost:27017/gamedb', ['accounts', 'progress']);
+var db = mongojs('mongodb://firstapplication:123@ds139937.mlab.com:39937/gamedb', ['accounts', 'progress']);
 
 // this open a base page for client - index.html
 app.get('/', function(req, res){
