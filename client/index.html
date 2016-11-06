@@ -3,6 +3,7 @@ Hello :)<br>
 <style>
     canvas, #sign{
         position:absolute;
+        border:1px solid #000000;
         top: 50%;
         left:50%;
         transform: translate(-50%, -50%);
@@ -11,6 +12,8 @@ Hello :)<br>
         -moz-transform: translate(-50%, -50%);
         -webkit-transform: translate(-50%, -50%);
     }
+
+
     #chat{
         position:absolute;
         top: 15%;
@@ -27,7 +30,9 @@ Hello :)<br>
 </div>
 
 <div id="game" style="display: none;">
-    <canvas id="field" width="500" height="500" style="border:1px solid #000000;"></canvas>
+    <canvas id="field" width="500" height="500"></canvas>
+    <canvas id="field-ui" width="500" height="500"></canvas>
+
     <div id="chat">
         <div id="chat-text" style="width:300px;height:500px;"></div>
 
@@ -123,6 +128,7 @@ Hello :)<br>
     // perfomance
 
     var field = document.getElementById("field").getContext("2d");
+    var fieldUi = document.getElementById("field-ui").getContext("2d");
 
     function extend(Child, Parent) {
         var Temp = function(){};
@@ -296,18 +302,18 @@ Hello :)<br>
         var player = Player.list[selfId];
         var x = WIDTH/2 - player.X;
         var y = HEIGHT/2 - player.Y;
-        var imgWidth = Img.map[player.map].width/3;
-        var imgHeight = Img.map[player.map].height/3;
-        field.drawImage(
-                Img.map[player.map],x,y,
-                Img.map[player.map].width,
-                Img.map[player.map].height,0,0,imgWidth,imgHeight);
+        field.drawImage(Img.map[player.map],x,y);
     }
 
+    var lastScore = null;
     function drawScore() {
-        field.fillStyle = 'white';
-        field.font = '30px Arial';
-        field.fillText(Player.list[selfId].score,0,30);
+        if(lastScore === Player.list[selfId].score)
+            return;
+        lastScore = Player.list[selfId].score;
+        fieldUi.clearRect(0,0,500,500);
+        fieldUi.fillStyle = 'white';
+        fieldUi.font = '30px Arial';
+        fieldUi.fillText(Player.list[selfId].score,0,30);
     }
 
     // perform all the time
