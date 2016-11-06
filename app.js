@@ -57,7 +57,7 @@ function Entity(args) {
    this.Y = args.y ||250;
    this.spdX = 0;
    this.spdY = 0;
-   this.map = 'blue';
+   this.map = args.map || 'blue';
 }
 
 
@@ -111,7 +111,7 @@ function Player(args){
    this.score = 0;
    this.damage = 49;
 
-   Player.list[args.id] = this;
+   Player.list[this.id] = this;
 
    initPack.players.push(this.getInitPack());
 }
@@ -136,24 +136,28 @@ Player.prototype.update = function () {
 
 Player.prototype.updateSpd = function () {
    if(this.pressingLeft)
-      this.spdX = this.maxSpd*this.spd;
-   else if(this.pressingRight)
       this.spdX = -this.maxSpd*this.spd;
+   else if(this.pressingRight)
+      this.spdX = this.maxSpd*this.spd;
    else
       this.spdX = 0;
 
    if(this.pressingUp)
-      this.spdY = this.maxSpd*this.spd;
-   else if(this.pressingDown)
       this.spdY = -this.maxSpd*this.spd;
+   else if(this.pressingDown)
+      this.spdY = this.maxSpd*this.spd;
    else
       this.spdY = 0;
 };
 
 Player.prototype.shoot = function (angle) {
-      var bullet = new Bullet({parent:this.id, angle:angle});
-      bullet.X = this.X;
-      bullet.Y = this.Y;
+      new Bullet({
+          parent:this.id,
+          angle:angle,
+          x:this.X,
+          y:this.Y,
+          map:this.map
+      });
 };
 
 Player.prototype.getInitPack = function () {
@@ -164,7 +168,8 @@ Player.prototype.getInitPack = function () {
       name  :  this.name,
       hpMax :  this.hpMax,
       hp    :  this.hp,
-      score :  this.score
+      score :  this.score,
+      map   :  this.map
    };
 };
 
@@ -202,6 +207,7 @@ function Bullet(args){
    this.parent = args.parent;
    this.maxSpd = 10;
    this.speed = 1;
+   this.angle = args.angle;
    this.spdX = Math.cos(args.angle/180*Math.PI) * this.maxSpd * this.speed;
    this.spdY = Math.sin(args.angle/180*Math.PI) * this.maxSpd * this.speed;
    this.toRemove = false;
@@ -229,7 +235,11 @@ Bullet.prototype.update = function () {
 
    for (var i in Player.list){
       var _player = Player.list[i];
-      if(this.getDistance(_player) < 20 && this.parent != _player.id){
+      if(
+          _player.map === this.map &&
+          this.getDistance(_player) < 20 &&
+          this.parent != _player.id
+      ){
          _player.hp -= 49;
 
          if(_player.hp <= 0){
@@ -251,7 +261,8 @@ Bullet.prototype.getInitPack = function () {
    return {
       id    :  this.id,
       x     :  this.X,
-      y     :  this.Y
+      y     :  this.Y,
+      map   :  this.map
    };
 };
 
@@ -290,9 +301,18 @@ Bullet.prototype.getUpdatePack = function () {
 var DEBUG = true;
 
 
+
+
 // handle player connecting
 function onPlayerConnect(socket, name) {
-   var player = new Player({id:socket.id, name:name});
+   var map = 'blue';
+    if(Math.random() > 0.5)
+        map = 'purple';
+   var player = new Player({
+       id:socket.id,
+       name:name,
+       map:map
+   });
 
    socket.on('keyPress', function (data) {
       if (data.inputId === 'left'){

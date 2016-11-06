@@ -107,8 +107,6 @@ Hello :)<br>
 
 
 
-
-
     // Images
 
     var Img = {};
@@ -116,8 +114,11 @@ Hello :)<br>
     Img.player.src = '/client/images/ship.png';
     Img.bullet = new Image();
     Img.bullet.src = '/client/images/stone-sphere.png';
-    Img.map = new Image();
-    Img.map.src = '/client/images/map.jpeg';
+    Img.map = {};
+    Img.map['blue'] = new Image();
+    Img.map['blue'].src = '/client/images/map2.jpg';
+    Img.map['purple'] = new Image();
+    Img.map['purple'].src = '/client/images/map1.jpg';
 
     // perfomance
 
@@ -137,6 +138,7 @@ Hello :)<br>
         this.id = initPack.id;
         this.X = initPack.x;
         this.Y = initPack.y;
+        this.map = initPack.map;
     }
 
 
@@ -162,6 +164,8 @@ Hello :)<br>
 
 
     Player.prototype.draw = function () {
+        if(Player.list[selfId].map !== this.map)
+            return;
         var hpWidth = 30 * this.hp / this.hpMax;
 
         var x = this.X - Player.list[selfId].X + WIDTH/2;
@@ -202,6 +206,8 @@ Hello :)<br>
 
 
     Bullet.prototype.draw = function () {
+        if(Player.list[selfId].map !== this.map)
+            return;
         var imgWidth = Img.bullet.width/2;
         var imgHeight = Img.bullet.height/2;
 
@@ -287,11 +293,15 @@ Hello :)<br>
     // useful functions
     
     function drawMap() {
-        var x = WIDTH/2 - Player.list[selfId].X;
-        var y = HEIGHT/2 - Player.list[selfId].Y;
-        var imgWidth = Img.map.width/3;
-        var imgHeight = Img.map.height/3;
-        field.drawImage(Img.map,x,y,Img.map.width,Img.map.height,0,0,imgWidth,imgHeight);
+        var player = Player.list[selfId];
+        var x = WIDTH/2 - player.X;
+        var y = HEIGHT/2 - player.Y;
+        var imgWidth = Img.map[player.map].width/3;
+        var imgHeight = Img.map[player.map].height/3;
+        field.drawImage(
+                Img.map[player.map],x,y,
+                Img.map[player.map].width,
+                Img.map[player.map].height,0,0,imgWidth,imgHeight);
     }
 
     function drawScore() {
