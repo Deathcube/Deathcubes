@@ -54,8 +54,8 @@ function extend(Child, Parent) {
 
 function Entity(args) {
    this.id = args.id;
-   this.X = args.x ||250;
-   this.Y = args.y ||250;
+   this.X = args.x ||500;
+   this.Y = args.y ||500;
    this.spdX = 0;
    this.spdY = 0;
    this.map = args.map || 'blue';
@@ -110,7 +110,6 @@ function Player(args){
    this.hp = 1000;
    this.hpMax = 1000;
    this.score = 0;
-   this.damage = 49;
 
    Player.list[this.id] = this;
 
@@ -136,16 +135,16 @@ Player.prototype.update = function () {
 };
 
 Player.prototype.updateSpd = function () {
-   if(this.pressingLeft)
+   if(this.pressingLeft && this.X > 355)
       this.spdX = -this.maxSpd*this.spd;
-   else if(this.pressingRight)
+   else if(this.pressingRight && this.X < 1570)
       this.spdX = this.maxSpd*this.spd;
    else
       this.spdX = 0;
 
-   if(this.pressingUp)
+   if(this.pressingUp && this.Y > 350)
       this.spdY = -this.maxSpd*this.spd;
-   else if(this.pressingDown)
+   else if(this.pressingDown && this.Y < 730)
       this.spdY = this.maxSpd*this.spd;
    else
       this.spdY = 0;
@@ -182,7 +181,11 @@ Player.prototype.getUpdatePack = function () {
       name  :  this.name,
       hp    :  this.hp,
       score :  this.score,
-      map   :  this.map
+      map   :  this.map,
+      pressingLeft : this.pressingLeft,
+      pressingDown : this.pressingDown,
+      pressingRight : this.pressingRight,
+      pressingUp : this.pressingUp
    };
 };
 
@@ -208,7 +211,7 @@ function Bullet(args){
    this.id = Math.random();
    this.parent = args.parent;
    this.maxSpd = 10;
-   this.speed = 1;
+   this.speed = 2.5;
    this.angle = args.angle;
    this.spdX = Math.cos(args.angle/180*Math.PI) * this.maxSpd * this.speed;
    this.spdY = Math.sin(args.angle/180*Math.PI) * this.maxSpd * this.speed;
@@ -250,8 +253,8 @@ Bullet.prototype.update = function () {
                shooter.score += 1;
             }
             _player.hp = _player.hpMax;
-            _player.X = Math.random() * 475;
-            _player.Y = Math.random() * 475;
+            _player.X = 250 + Math.random() * 475;
+            _player.Y = 250 + Math.random() * 475;
          }
          this.toRemove = true;
       }

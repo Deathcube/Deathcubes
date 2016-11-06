@@ -4,8 +4,8 @@
         border:1px solid #000000;
         top: 50%;
         left:50%;
-        height: 500px;
-        width: 500px;
+        height: 700px;
+        width: 700px;
         transform: translate(-50%, -50%);
         -o-transform: translate(-50%, -50%);
         -ms-transform: translate(-50%, -50%);
@@ -46,6 +46,17 @@
         height: 400px;
         width: 300px;
     }
+    #stat{
+        position:absolute;
+        border:1px solid #000000;
+        top: 40%;
+        left:80%;
+        transform: translate(-15%, -70%);
+        -o-transform: translate(-15%, -70%);
+        -ms-transform: translate(-15%, -70%);
+        -moz-transform: translate(-15%, -70%);
+        -webkit-transform: translate(-15%, -70%);
+    }
 </style>
 
 <div id="sign">
@@ -56,10 +67,11 @@
 </div>
 
 <div id="game" style="display: none;">
-    <div id="GameField">
-        <canvas id="field" width="500" height="500"></canvas>
-        <canvas id="field-ui" width="500" height="500"></canvas>
+    <div id="GameField" style="position: absolute">
+        <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
+        <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
         <div id="user-interface">
+            <canvas id="field-ui" width="700" height="700" style="position: absolute"></canvas>
             <button onclick="changeMap()" style="position: absolute;bottom: 0px;left: 0px">Change Map</button>
         </div>
     </div>
@@ -72,6 +84,9 @@
                 <input id="chat-input" type="text">
             </form>
         </div>
+        <div id="stat">
+
+        </div>
     </div>
 
 </div>
@@ -81,8 +96,8 @@
 <script>
     var socket = io();//io.connect('http://localhost:2000');
     var game = document.getElementById("game");
-    var WIDTH = 500;
-    var HEIGHT = 500;
+    var WIDTH = 700;
+    var HEIGHT = 700;
 
     // chat
 
@@ -153,20 +168,29 @@
     // Images
 
     var Img = {};
-    Img.player = new Image();
-    Img.player.src = '/client/images/ship.png';
+    Img.player = {};
+    Img.player['up'] = new Image();
+    Img.player['down'] = new Image();
+    Img.player['right'] = new Image();
+    Img.player['left'] = new Image();
+    Img.player['up'].src = '/client/images/ships/up.png';
+    Img.player['down'].src = '/client/images/ships/down.png';
+    Img.player['right'].src = '/client/images/ships/right.png';
+    Img.player['left'].src = '/client/images/ships/left.png';
+
     Img.bullet = new Image();
-    Img.bullet.src = '/client/images/stone-sphere.png';
+    Img.bullet.src = '/client/images/bullets/stone-sphere.png';
     Img.map = {};
     Img.map['blue'] = new Image();
-    Img.map['blue'].src = '/client/images/map2.jpg';
+    Img.map['blue'].src = '/client/images/maps/map2.jpg';
     Img.map['purple'] = new Image();
-    Img.map['purple'].src = '/client/images/map1.jpg';
+    Img.map['purple'].src = '/client/images/maps/map1.jpg';
 
     // perfomance
 
     var field = document.getElementById("field").getContext("2d");
     var fieldUi = document.getElementById("field-ui").getContext("2d");
+    var user = document.getElementById("user").getContext("2d");
 
     function extend(Child, Parent) {
         var Temp = function(){};
@@ -198,6 +222,11 @@
         this.hp = initPack.hp;
         this.hpMax = initPack.hpMax;
         this.score = initPack.score;
+        this.pressingRight = false;
+        this.pressingLeft = false;
+        this.pressingUp = false;
+        this.pressingDown = false;
+        this.image = Img.player['up'];
 
         Player.list[initPack.id] = this;
     }
@@ -206,28 +235,40 @@
 
     extend(Player, Entity);
 
-
     Player.prototype.draw = function () {
-        if(Player.list[selfId].map !== this.map)
+        var player = Player.list[selfId];
+        if(player.map !== this.map)
             return;
         var hpWidth = 30 * this.hp / this.hpMax;
 
-        var x = this.X - Player.list[selfId].X + WIDTH/2;
-        var y = this.Y - Player.list[selfId].Y + HEIGHT/2;
+        var x = this.X - player.X + WIDTH/2;
+        var y = this.Y - player.Y + HEIGHT/2;
 
-        field.fillStyle = 'red';
-        field.font = '20px Arial';
-        field.fillText(this.name, x-15, y - 35);
-        field.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
+        user.fillStyle = 'red';
+        user.font = '20px Arial';
+        user.fillText(this.name, x-15, y - 35);
+        user.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
 
-        var imgWidth = Img.player.width/15;
-        var imgHeight = Img.player.height/15;
+        var playerImg = this.image;
+        if(this.pressingRight)
+            playerImg = Img.player['right'];
+        else if(this.pressingLeft)
+            playerImg = Img.player['left'];
+        else if(this.pressingUp)
+            playerImg = Img.player['up'];
+        else if(this.pressingDown)
+            playerImg = Img.player['down'];
 
-        field.drawImage(Img.player, 0, 0,
-                        Img.player.width, Img.player.height,
-                        x-imgWidth/2,y-imgHeight/2,
-                        imgWidth, imgHeight
+        this.image = playerImg;
+        var imgWidth = playerImg.width/15;
+        var imgHeight = playerImg.height/15;
+
+        user.drawImage(playerImg, 0, 0,
+                       playerImg.width, playerImg.height,
+                       x-imgWidth/2,y-imgHeight/2,
+                       imgWidth, imgHeight
         );
+
     };
 
 
@@ -304,6 +345,14 @@
                     player.score = pack.score;
                 if (pack.map !== undefined)
                     player.map = pack.map;
+                if (pack.pressingLeft !== undefined)
+                    player.pressingLeft = pack.pressingLeft;
+                if (pack.pressingDown !== undefined)
+                    player.pressingDown = pack.pressingDown;
+                if (pack.pressingRight !== undefined)
+                    player.pressingRight = pack.pressingRight;
+                if (pack.pressingUp !== undefined)
+                    player.pressingUp = pack.pressingUp;
             }
         }
         for(var i = 0; i < data.bullets.length; i++){
@@ -350,10 +399,18 @@
         if(lastScore === Player.list[selfId].score)
             return;
         lastScore = Player.list[selfId].score;
-        fieldUi.clearRect(0,0,500,500);
+        fieldUi.clearRect(0,0,700,700);
         fieldUi.fillStyle = 'white';
         fieldUi.font = '30px Arial';
-        fieldUi.fillText(Player.list[selfId].score,0,30);
+        fieldUi.fillText('Kills: '+Player.list[selfId].score,0,30);
+    }
+
+    function playerProgress() {
+        var stat = '<table>';
+        for(var i in Player.list){
+            stat += Player.list[i].name + ' have ' + Player.list[i].score +'  kills<br>';
+        }
+        document.getElementById('stat').innerHTML = stat+'</table>';
     }
 
     // perform all the time
@@ -361,9 +418,11 @@
     setInterval(function () {
         if(!selfId)
             return;
-        field.clearRect(0,0,500,500);
+        field.clearRect(0,0,700,700);
+        user.clearRect(0,0,700,700);
         drawMap();
         drawScore();
+        playerProgress();
         for(var i in Player.list){
             Player.list[i].draw();
         }
@@ -371,31 +430,65 @@
         for(var i in Bullet.list){
             Bullet.list[i].draw();
         }
-    }, 40); // 25 times per minute
-
+    }, 40); // 25 times per second
 
     document.onkeydown = function (event) {
-        if(event.keyCode === 68)
+        var player = Player.list[selfId];
+        if(event.keyCode === 68){
             socket.emit('keyPress', {inputId:'right', state:true});
-        else if(event.keyCode === 83)
+            player.pressingRight = true;
+            player.pressingDown = false;
+            player.pressingLeft = false;
+            player.pressingUp = false;
+            beforeState = 68;
+        }
+        else if(event.keyCode === 83){
             socket.emit('keyPress', {inputId:'down', state:true});
-        else if(event.keyCode === 65)
+
+            player.pressingRight = false;
+            player.pressingDown = true;
+            player.pressingLeft = false;
+            player.pressingUp = false;
+            beforeState = 83;
+        }
+        else if(event.keyCode === 65){
             socket.emit('keyPress', {inputId:'left', state:true});
-        else if(event.keyCode === 87)
+
+            player.pressingRight = false;
+            player.pressingDown = false;
+            player.pressingLeft = true;
+            player.pressingUp = false;
+            beforeState = 65;
+        }
+        else if(event.keyCode === 87){
             socket.emit('keyPress', {inputId:'up', state:true});
 
+            player.pressingRight = false;
+            player.pressingDown = false;
+            player.pressingLeft = false;
+            player.pressingUp = true;
+            beforeState = 87;
+        }
     };
 
     document.onkeyup = function (event) {
-        if(event.keyCode === 68)
+        var player = Player.list[selfId];
+        if(event.keyCode === 68){
             socket.emit('keyPress', {inputId:'right', state:false});
-        else if(event.keyCode === 83)
+            player.pressingRight = false;
+        }
+        else if(event.keyCode === 83){
             socket.emit('keyPress', {inputId:'down', state:false});
-        else if(event.keyCode === 65)
+            player.pressingDown = false;
+        }
+        else if(event.keyCode === 65){
             socket.emit('keyPress', {inputId:'left', state:false});
-        else if(event.keyCode === 87)
-            socket.emit('keyPress', {inputId:'up', state:false});
-
+            player.pressingLeft = false;
+        }
+        else if(event.keyCode === 87) {
+            socket.emit('keyPress', {inputId: 'up', state: false});
+            player.pressingUp = false;
+        }
     };
 
     document.onmousedown = function (event) {
