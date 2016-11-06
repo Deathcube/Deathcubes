@@ -173,18 +173,18 @@
     Img.player['down'] = new Image();
     Img.player['right'] = new Image();
     Img.player['left'] = new Image();
-    Img.player['up'].src = '/client/images/shipup.png';
-    Img.player['down'].src = '/client/images/shipdown.png';
-    Img.player['right'].src = '/client/images/shipright.png';
-    Img.player['left'].src = '/client/images/shipleft.png';
+    Img.player['up'].src = '/client/images/ships/up.png';
+    Img.player['down'].src = '/client/images/ships/down.png';
+    Img.player['right'].src = '/client/images/ships/right.png';
+    Img.player['left'].src = '/client/images/ships/left.png';
 
     Img.bullet = new Image();
-    Img.bullet.src = '/client/images/stone-sphere.png';
+    Img.bullet.src = '/client/images/bullets/stone-sphere.png';
     Img.map = {};
     Img.map['blue'] = new Image();
-    Img.map['blue'].src = '/client/images/map2.jpg';
+    Img.map['blue'].src = '/client/images/maps/map2.jpg';
     Img.map['purple'] = new Image();
-    Img.map['purple'].src = '/client/images/map1.jpg';
+    Img.map['purple'].src = '/client/images/maps/map1.jpg';
 
     // perfomance
 
@@ -408,7 +408,7 @@
     function playerProgress() {
         var stat = '<table>';
         for(var i in Player.list){
-            stat += 'Player: '+ Player.list[i].name + '| Kills: ' + Player.list[i].score +'<br>';
+            stat += Player.list[i].name + ' have ' + Player.list[i].score +'  kills<br>';
         }
         document.getElementById('stat').innerHTML = stat+'</table>';
     }
@@ -472,15 +472,23 @@
     };
 
     document.onkeyup = function (event) {
-        if(event.keyCode === 68)
+        var player = Player.list[selfId];
+        if(event.keyCode === 68){
             socket.emit('keyPress', {inputId:'right', state:false});
-        else if(event.keyCode === 83)
+            player.pressingRight = false;
+        }
+        else if(event.keyCode === 83){
             socket.emit('keyPress', {inputId:'down', state:false});
-        else if(event.keyCode === 65)
+            player.pressingDown = false;
+        }
+        else if(event.keyCode === 65){
             socket.emit('keyPress', {inputId:'left', state:false});
-        else if(event.keyCode === 87)
-            socket.emit('keyPress', {inputId:'up', state:false});
-
+            player.pressingLeft = false;
+        }
+        else if(event.keyCode === 87) {
+            socket.emit('keyPress', {inputId: 'up', state: false});
+            player.pressingUp = false;
+        }
     };
 
     document.onmousedown = function (event) {
