@@ -2,11 +2,12 @@
 // usefull libraries
 var express = require('express'); // this help to find files in project
 var mongojs = require('mongojs'); // this works with database
-
+var profiler = require('v8-profiler'); // this create profiler data
 
 // this variables are main in application and use in general
 var app = express();
 var serv = require('http').Server(app);
+var fs = require('fs');
 var db = mongojs('mongodb://firstapplication:123@ds139937.mlab.com:39937/gamedb', ['accounts', 'progress']);
 
 // this open a base page for client - index.html
@@ -470,7 +471,7 @@ io.sockets.on('connection', function (socket) {
          return;
 
       for(var i in SOCKET_LIST){
-         SOCKET_LIST[i].emit('chatMsgSend', Player.list[socket.id].number+': '+ data);
+         SOCKET_LIST[i].emit('chatMsgSend', Player.list[socket.id].name+': '+ data);
       }
    });
 
@@ -515,3 +516,21 @@ setInterval(function () {
    removePack.bullets = [];
 
 }, 40); // that means 25 times per second
+
+
+
+
+function startProfiling(duration) {
+   profiler.startProfiling('1', true);
+   setTimeout(function () {
+      var profile1 = profiler.stopProfiling('1');
+
+      profile1.export(function (error, result) {
+         fs.writeFile('./profile.cpuprofile', result);
+         profile1.delete();
+         console.log('profile saved');
+      });
+   },duration);
+}
+
+startProfiling(10000);
