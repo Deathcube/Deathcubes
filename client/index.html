@@ -1,9 +1,19 @@
-Hello :)<br>
-
 <style>
-    canvas, #sign{
+    #GameField{
         position:absolute;
         border:1px solid #000000;
+        top: 50%;
+        left:50%;
+        height: 500px;
+        width: 500px;
+        transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        -moz-transform: translate(-50%, -50%);
+        -webkit-transform: translate(-50%, -50%);
+    }
+    #sign{
+        position:absolute;
         top: 50%;
         left:50%;
         transform: translate(-50%, -50%);
@@ -16,30 +26,54 @@ Hello :)<br>
 
     #chat{
         position:absolute;
-        top: 15%;
-        left:70%;
+        border:1px solid #000000;
+        top: 60%;
+        left:5%;
+        transform: translate(-15%, -70%);
+        -o-transform: translate(-15%, -70%);
+        -ms-transform: translate(-15%, -70%);
+        -moz-transform: translate(-15%, -70%);
+        -webkit-transform: translate(-15%, -70%);
         overflow-y: scroll;
+    }
+    #chat-input{
+        border:1px solid #000000;
+        height: 20px;
+        width: 100%;
+
+    }
+    #chat-text{
+        height: 400px;
+        width: 300px;
     }
 </style>
 
 <div id="sign">
     Username: <input id="sign-username" type="text"><br>
-    Password: <input id="sign-password" type="password">
+    Password: <input id="sign-password" type="password"><br>
     <button id="signIn">Sign In</button>
     <button id="signUp">Sign Up</button>
 </div>
 
 <div id="game" style="display: none;">
-    <canvas id="field" width="500" height="500"></canvas>
-    <canvas id="field-ui" width="500" height="500"></canvas>
-
-    <div id="chat">
-        <div id="chat-text" style="width:300px;height:500px;"></div>
-
-        <form id="chat-form">
-            <input id="chat-input" type="text" style="width:80%">
-        </form>
+    <div id="GameField">
+        <canvas id="field" width="500" height="500"></canvas>
+        <canvas id="field-ui" width="500" height="500"></canvas>
+        <div id="user-interface">
+            <button onclick="changeMap()" style="position: absolute;bottom: 0px;left: 0px">Change Map</button>
+        </div>
     </div>
+    <div id="UI">
+       <div> Hello :)</div><br>
+        <div id="chat">
+            <div id="chat-text"></div>
+
+            <form id="chat-form">
+                <input id="chat-input" type="text">
+            </form>
+        </div>
+    </div>
+
 </div>
 
 <!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
@@ -109,7 +143,11 @@ Hello :)<br>
 
 
 
+    // UI
 
+    function changeMap() {
+        socket.emit('changeMap');
+    }
 
 
     // Images
@@ -264,6 +302,8 @@ Hello :)<br>
                     player.hp = pack.hp;
                 if (pack.score !== undefined)
                     player.score = pack.score;
+                if (pack.map !== undefined)
+                    player.map = pack.map;
             }
         }
         for(var i = 0; i < data.bullets.length; i++){

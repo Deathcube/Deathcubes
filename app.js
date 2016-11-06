@@ -181,7 +181,8 @@ Player.prototype.getUpdatePack = function () {
       id    :  this.id,
       name  :  this.name,
       hp    :  this.hp,
-      score :  this.score
+      score :  this.score,
+      map   :  this.map
    };
 };
 
@@ -330,6 +331,14 @@ function onPlayerConnect(socket, name) {
          player.mouseAngle = data.state;
       }
 
+   });
+
+   socket.on('changeMap', function () {
+      if(player.map === 'blue'){
+         player.map = 'purple';
+      } else {
+         player.map = 'blue';
+      }
    });
 
    socket.emit('init', {
@@ -484,7 +493,6 @@ io.sockets.on('connection', function (socket) {
    });
 
 
-
    socket.on('disconnect', function () {
       delete SOCKET_LIST[socket.id];
       onPlayerDisconnect(socket);
@@ -532,5 +540,3 @@ function startProfiling(duration) {
       });
    },duration);
 }
-
-startProfiling(10000);
