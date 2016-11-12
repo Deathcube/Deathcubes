@@ -1,95 +1,100 @@
-<style>
-    #GameField{
-        position:absolute;
-        border:1px solid #000000;
-        top: 50%;
-        left:50%;
-        height: 700px;
-        width: 700px;
-        transform: translate(-50%, -50%);
-        -o-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        -moz-transform: translate(-50%, -50%);
-        -webkit-transform: translate(-50%, -50%);
-    }
-    #sign{
-        position:absolute;
-        top: 50%;
-        left:50%;
-        transform: translate(-50%, -50%);
-        -o-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        -moz-transform: translate(-50%, -50%);
-        -webkit-transform: translate(-50%, -50%);
-    }
+
+<html>
+<head>
+    <style>
+        #GameField{
+            position:absolute;
+            border:1px solid #000000;
+            top: 50%;
+            left:50%;
+            height: 700px;
+            width: 700px;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #sign{
+            position:absolute;
+            top: 50%;
+            left:50%;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
 
 
-    #chat{
-        position:absolute;
-        border:1px solid #000000;
-        top: 60%;
-        left:5%;
-        transform: translate(-15%, -70%);
-        -o-transform: translate(-15%, -70%);
-        -ms-transform: translate(-15%, -70%);
-        -moz-transform: translate(-15%, -70%);
-        -webkit-transform: translate(-15%, -70%);
-        overflow-y: scroll;
-    }
-    #chat-input{
-        border:1px solid #000000;
-        height: 20px;
-        width: 100%;
+        #chat{
+            position:absolute;
+            border:1px solid #000000;
+            top: 60%;
+            left:5%;
+            transform: translate(-15%, -70%);
+            -o-transform: translate(-15%, -70%);
+            -ms-transform: translate(-15%, -70%);
+            -moz-transform: translate(-15%, -70%);
+            -webkit-transform: translate(-15%, -70%);
+            overflow-y: scroll;
+        }
+        #chat-input{
+            border:1px solid #000000;
+            height: 20px;
+            width: 100%;
 
-    }
-    #chat-text{
-        height: 400px;
-        width: 300px;
-    }
-    #stat{
-        position:absolute;
-        border:1px solid #000000;
-        top: 40%;
-        left:80%;
-        transform: translate(-15%, -70%);
-        -o-transform: translate(-15%, -70%);
-        -ms-transform: translate(-15%, -70%);
-        -moz-transform: translate(-15%, -70%);
-        -webkit-transform: translate(-15%, -70%);
-    }
-</style>
-
-<div id="sign">
-    Username: <input id="sign-username" type="text"><br>
-    Password: <input id="sign-password" type="password"><br>
-    <button id="signIn">Sign In</button>
-    <button id="signUp">Sign Up</button>
-</div>
-
-<div id="game" style="display: none;">
-    <div id="GameField" style="position: absolute">
-        <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
-        <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
-        <div id="user-interface">
-            <canvas id="field-ui" width="700" height="700" style="position: absolute"></canvas>
-            <button onclick="changeMap()" style="position: absolute;bottom: 0px;left: 0px">Change Map</button>
+        }
+        #chat-text{
+            height: 400px;
+            width: 300px;
+        }
+        #stat{
+            position:absolute;
+            border:1px solid #000000;
+            top: 40%;
+            left:80%;
+            transform: translate(-15%, -70%);
+            -o-transform: translate(-15%, -70%);
+            -ms-transform: translate(-15%, -70%);
+            -moz-transform: translate(-15%, -70%);
+            -webkit-transform: translate(-15%, -70%);
+        }
+    </style>
+</head>
+    <body>
+        <div id="sign">
+            Username: <input id="sign-username" type="text"><br>
+            Password: <input id="sign-password" type="password"><br>
+            <button id="signIn">Sign In</button>
+            <button id="signUp">Sign Up</button>
         </div>
-    </div>
-    <div id="UI">
-       <div> Hello :)</div><br>
-        <div id="chat">
-            <div id="chat-text"></div>
 
-            <form id="chat-form">
-                <input id="chat-input" type="text">
-            </form>
+        <div id="game" style="display: none;">
+            <div id="GameField" style="position: absolute">
+                <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
+                <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
+                <div id="user-interface">
+                    <canvas id="field-ui" width="700" height="700" style="position: absolute"></canvas>
+                    <button onclick="changeMap()" style="position: absolute;bottom: 0px;left: 0px">Change Map</button>
+                </div>
+            </div>
+            <div id="UI">
+                <div> Hello :)</div><br>
+                <div id="chat">
+                    <div id="chat-text"></div>
+
+                    <form id="chat-form">
+                        <input id="chat-input" type="text">
+                    </form>
+                </div>
+                <div id="stat">
+
+                </div>
+            </div>
         </div>
-        <div id="stat">
-
-        </div>
-    </div>
-
-</div>
+    </body>
+</html>
 
 <!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
 <script src="/client/socket.io.js"></script>
@@ -440,7 +445,6 @@
             player.pressingDown = false;
             player.pressingLeft = false;
             player.pressingUp = false;
-            beforeState = 68;
         }
         else if(event.keyCode === 83){
             socket.emit('keyPress', {inputId:'down', state:true});
@@ -449,7 +453,6 @@
             player.pressingDown = true;
             player.pressingLeft = false;
             player.pressingUp = false;
-            beforeState = 83;
         }
         else if(event.keyCode === 65){
             socket.emit('keyPress', {inputId:'left', state:true});
@@ -458,7 +461,6 @@
             player.pressingDown = false;
             player.pressingLeft = true;
             player.pressingUp = false;
-            beforeState = 65;
         }
         else if(event.keyCode === 87){
             socket.emit('keyPress', {inputId:'up', state:true});
@@ -467,7 +469,6 @@
             player.pressingDown = false;
             player.pressingLeft = false;
             player.pressingUp = true;
-            beforeState = 87;
         }
     };
 
