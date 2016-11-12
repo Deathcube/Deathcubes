@@ -142,7 +142,7 @@ Player.prototype.updateSpd = function () {
    else
       this.spdX = 0;
 
-   if(this.pressingUp && this.Y > 350)
+   if(this.pressingUp && this.Y > 355)
       this.spdY = -this.maxSpd*this.spd;
    else if(this.pressingDown && this.Y < 730)
       this.spdY = this.maxSpd*this.spd;
@@ -253,8 +253,8 @@ Bullet.prototype.update = function () {
                shooter.score += 1;
             }
             _player.hp = _player.hpMax;
-            _player.X = 250 + Math.random() * 475;
-            _player.Y = 250 + Math.random() * 475;
+            _player.X = 355 + Math.random() * 1220;
+            _player.Y = 355 + Math.random() * 375;
          }
          this.toRemove = true;
       }
