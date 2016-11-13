@@ -51,6 +51,25 @@ function extend(Child, Parent) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Base entity class for define base attributes and methods
 
 function Entity(args) {
@@ -77,6 +96,26 @@ Entity.prototype.updatePosition = function () {
 Entity.prototype.getDistance = function (point) {
    return Math.sqrt(Math.pow(this.X-point.X,2) + Math.pow(this.Y - point.Y,2));
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -199,6 +238,29 @@ Player.prototype.getUpdatePack = function () {
       pressingUp : this.pressingUp
    };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -363,6 +425,26 @@ Enemy.prototype.getUpdatePack = function () {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Bullet class with functions. Extends from Entity
 
 function Bullet(args){
@@ -459,6 +541,24 @@ Bullet.prototype.getUpdatePack = function () {
       id    :  this.id
    };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
