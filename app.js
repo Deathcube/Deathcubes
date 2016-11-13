@@ -33,6 +33,7 @@ console.log("Server started :)");
 
 // this is a global array contains all socket connections
 var SOCKET_LIST = {};
+var TIME = 0;
 
 
 // extending function
@@ -105,11 +106,14 @@ function Player(args){
    this.pressingDown = false;
    this.pressingAttack = false;
    this.mouseAngle = 0;
-   this.spd = 0.5;
+   this.spd = 0.3;
    this.maxSpd = 10;
-   this.hp = 1000;
+   this.hp = 300;
    this.hpMax = 1000;
    this.score = 0;
+   this.shootDelay = 500;
+   this.shootLastTime = Date.now();
+   this.canShoot = false;
 
    Player.list[this.id] = this;
 
@@ -130,8 +134,15 @@ Player.prototype.update = function () {
    this.updateSpd();
    Entity.prototype.update.apply(this);
 
-   if(this.pressingAttack)
+   Date.now() - this.shootLastTime > this.shootDelay  ?
+       this.canShoot = true   :
+       this.canShoot = false;
+
+   if(this.pressingAttack && this.canShoot){
       this.shoot(this.mouseAngle);
+      this.shootLastTime = Date.now();
+   }
+
 };
 
 Player.prototype.updateSpd = function () {
@@ -211,7 +222,7 @@ function Enemy(args){
    this.shootAngle = 0;
    this.spd = 0.5;
    this.maxSpd = 10;
-   this.hp = 1000;
+   this.hp = 300;
    this.hpMax = 1000;
    this.movingRight = false;
    this.movingLeft = false;
@@ -219,6 +230,9 @@ function Enemy(args){
    this.movingDown = false;
    this.pressingAttack = true;
    this.target = null;
+   this.shootDelay = 500;
+   this.shootLastTime = Date.now();
+   this.canShoot = false;
 
    Enemy.list[this.id] = this;
 
@@ -249,11 +263,15 @@ Enemy.prototype.update = function () {
       }
    }
 
-   if(this.target){
+   Date.now() - this.shootLastTime > this.shootDelay  ?
+       this.canShoot = true   :
+       this.canShoot = false;
+
+   if(this.target && this.canShoot){
       this.shootAngle = Math.atan2(-this.target.X/2+this.X/2,this.target.Y/2-this.Y/2)/Math.PI*180+90;
       this.shoot(this.shootAngle);
+      this.shootLastTime = Date.now();
    }
-
 };
 
 Enemy.prototype.updateSpd = function () {
@@ -708,6 +726,7 @@ var initPack = {players:[],bullets:[],enemies:[]};
 var removePack = {players:[],bullets:[],enemies:[]};
 
 setInterval(function () {
+   TIME++;
    var pack = {
     players : playersUpdate(),
     bullets : bulletsUpdate(),
