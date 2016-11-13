@@ -275,7 +275,7 @@ Enemy.prototype.update = function () {
 };
 
 Enemy.prototype.updateSpd = function () {
-   if(Math.random() > 0.90){
+   if(Math.random() > 0.9){
       var randomMoveChance = Math.random();
       if(randomMoveChance>0.75 && this.X > 355){
          this.spdX = -this.maxSpd*this.spd;
@@ -408,7 +408,7 @@ Bullet.prototype.update = function () {
 
          if(_player.hp <= 0){
             var shooter = Player.list[this.parent];
-            if (shooter) {
+            if(shooter){
                shooter.score += 1;
             }
             _player.hp = _player.hpMax;
@@ -424,12 +424,13 @@ Bullet.prototype.update = function () {
       if (
           _enemy.map === this.map &&
           this.getDistance(_enemy) < 20 &&
-          this.parent != _enemy.id && !(Enemy.list[this.parent])
-      ) {
+          this.parent != _enemy.id &&
+          !(Enemy.list[this.parent])
+      ){
          _enemy.hp -= 49;
-            if (_enemy.hp <= 0) {
+            if(_enemy.hp <= 0){
                var shooter = Player.list[this.parent];
-               if (shooter) {
+               if(shooter){
                   shooter.score += 1;
                }
                _enemy.hp = _enemy.hpMax;
