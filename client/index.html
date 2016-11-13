@@ -1,4 +1,3 @@
-
 <html>
 <head>
     <style>
@@ -183,8 +182,20 @@
     Img.player['right'].src = '/client/images/ships/right.png';
     Img.player['left'].src = '/client/images/ships/left.png';
 
+    Img.enemy = {};
+    Img.enemy['up'] = new Image();
+    Img.enemy['down'] = new Image();
+    Img.enemy['right'] = new Image();
+    Img.enemy['left'] = new Image();
+    Img.enemy['up'].src = '/client/images/ships/up.png';
+    Img.enemy['down'].src = '/client/images/ships/down.png';
+    Img.enemy['right'].src = '/client/images/ships/right.png';
+    Img.enemy['left'].src = '/client/images/ships/left.png';
+
+
     Img.bullet = new Image();
     Img.bullet.src = '/client/images/bullets/stone-sphere.png';
+
     Img.map = {};
     Img.map['blue'] = new Image();
     Img.map['blue'].src = '/client/images/maps/map2.jpg';
@@ -282,6 +293,74 @@
 
 
 
+
+
+    // enemy
+
+    function Enemy(initPack){
+        Entity.call(this, initPack);
+        this.name = initPack.name;
+        this.hp = initPack.hp;
+        this.hpMax = initPack.hpMax;
+        this.movingRight = false;
+        this.movingLeft = false;
+        this.movingUp = false;
+        this.movingDown = false;
+        this.image = Img.enemy['up'];
+
+        Enemy.list[initPack.id] = this;
+    }
+
+    Enemy.list = {};
+
+    extend(Enemy, Entity);
+
+    Enemy.prototype.draw = function () {
+        var player = Player.list[selfId];
+        if(player.map !== this.map)
+            return;
+
+        var hpWidth = 30 * this.hp / this.hpMax;
+
+        var x = this.X - player.X + WIDTH/2;
+        var y = this.Y - player.Y + HEIGHT/2;
+
+        user.fillStyle = 'red';
+        user.font = '20px Arial';
+        user.fillText(this.name, x-15, y - 35);
+        user.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
+
+        var enemyImg = this.image;
+        if(this.movingRight)
+            enemyImg = Img.enemy['right'];
+        else if(this.movingLeft)
+            enemyImg = Img.enemy['left'];
+        else if(this.movingUp)
+            enemyImg = Img.enemy['up'];
+        else if(this.movingDown)
+            enemyImg = Img.enemy['down'];
+
+        this.image = enemyImg;
+        var imgWidth = enemyImg.width/15;
+        var imgHeight = enemyImg.height/15;
+
+        user.drawImage(enemyImg, 0, 0,
+                enemyImg.width, enemyImg.height,
+                x-imgWidth/2,y-imgHeight/2,
+                imgWidth, imgHeight
+        );
+
+    };
+
+
+
+
+
+
+
+
+
+
     // bullet
 
     function Bullet(initPack){
@@ -326,6 +405,9 @@
         for(var i = 0; i < data.players.length; i++){
             new Player(data.players[i]);
         }
+        for(var i = 0; i < data.enemies.length; i++){
+            new Enemy(data.enemies[i]);
+        }
         for(var i = 0; i < data.bullets.length; i++){
             new Bullet(data.bullets[i]);
         }
@@ -337,37 +419,59 @@
 
     socket.on('update', function (data) {
         for(var i = 0; i < data.players.length; i++){
-            var pack = data.players[i];
-            var player = Player.list[pack.id];
+            var pack_of_properties = data.players[i];
+            var player = Player.list[pack_of_properties.id];
             if(player){
-                if (pack.x !== undefined)
-                    player.X = pack.x;
-                if (pack.y !== undefined)
-                    player.Y = pack.y;
-                if (pack.hp !== undefined)
-                    player.hp = pack.hp;
-                if (pack.score !== undefined)
-                    player.score = pack.score;
-                if (pack.map !== undefined)
-                    player.map = pack.map;
-                if (pack.pressingLeft !== undefined)
-                    player.pressingLeft = pack.pressingLeft;
-                if (pack.pressingDown !== undefined)
-                    player.pressingDown = pack.pressingDown;
-                if (pack.pressingRight !== undefined)
-                    player.pressingRight = pack.pressingRight;
-                if (pack.pressingUp !== undefined)
-                    player.pressingUp = pack.pressingUp;
+                if (pack_of_properties.x !== undefined)
+                    player.X = pack_of_properties.x;
+                if (pack_of_properties.y !== undefined)
+                    player.Y = pack_of_properties.y;
+                if (pack_of_properties.hp !== undefined)
+                    player.hp = pack_of_properties.hp;
+                if (pack_of_properties.score !== undefined)
+                    player.score = pack_of_properties.score;
+                if (pack_of_properties.map !== undefined)
+                    player.map = pack_of_properties.map;
+                if (pack_of_properties.pressingLeft !== undefined)
+                    player.pressingLeft = pack_of_properties.pressingLeft;
+                if (pack_of_properties.pressingDown !== undefined)
+                    player.pressingDown = pack_of_properties.pressingDown;
+                if (pack_of_properties.pressingRight !== undefined)
+                    player.pressingRight = pack_of_properties.pressingRight;
+                if (pack_of_properties.pressingUp !== undefined)
+                    player.pressingUp = pack_of_properties.pressingUp;
+            }
+        }
+        for(var i = 0; i < data.enemies.length; i++){
+            var pack_of_properties = data.enemies[i];
+            var enemy = Enemy.list[pack_of_properties.id];
+            if(enemy){
+                if (pack_of_properties.x !== undefined)
+                    enemy.X = pack_of_properties.x;
+                if (pack_of_properties.y !== undefined)
+                    enemy.Y = pack_of_properties.y;
+                if (pack_of_properties.hp !== undefined)
+                    enemy.hp = pack_of_properties.hp;
+                if (pack_of_properties.map !== undefined)
+                    enemy.map = pack_of_properties.map;
+                if (pack_of_properties.movingLeft !== undefined)
+                    enemy.movingLeft = pack_of_properties.movingLeft;
+                if (pack_of_properties.movingDown !== undefined)
+                    enemy.movingDown = pack_of_properties.movingDown;
+                if (pack_of_properties.movingRight !== undefined)
+                    enemy.movingRight = pack_of_properties.movingRight;
+                if (pack_of_properties.movingUp !== undefined)
+                    enemy.movingUp = pack_of_properties.movingUp;
             }
         }
         for(var i = 0; i < data.bullets.length; i++){
-            var pack = data.bullets[i];
-            var _bullet = Bullet.list[pack.id];
+            var pack_of_properties = data.bullets[i];
+            var _bullet = Bullet.list[pack_of_properties.id];
             if(_bullet){
-                if (pack.x !== undefined)
-                    _bullet.X = pack.x;
-                if (pack.y !== undefined)
-                    _bullet.Y = pack.y;
+                if (pack_of_properties.x !== undefined)
+                    _bullet.X = pack_of_properties.x;
+                if (pack_of_properties.y !== undefined)
+                    _bullet.Y = pack_of_properties.y;
             }
         }
     });
@@ -410,7 +514,7 @@
         fieldUi.fillText('Kills: '+Player.list[selfId].score,0,30);
     }
 
-    function playerProgress() {
+    function drawPlayerProgress() {
         var stat = '<table>';
         for(var i in Player.list){
             stat += Player.list[i].name + ' have ' + Player.list[i].score +'  kills<br>';
@@ -427,14 +531,20 @@
         user.clearRect(0,0,700,700);
         drawMap();
         drawScore();
-        playerProgress();
+        drawPlayerProgress();
+
         for(var i in Player.list){
             Player.list[i].draw();
+        }
+
+        for(var i in Enemy.list){
+            Enemy.list[i].draw();
         }
 
         for(var i in Bullet.list){
             Bullet.list[i].draw();
         }
+
     }, 40); // 25 times per second
 
     document.onkeydown = function (event) {
@@ -508,7 +618,6 @@
             _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
 
     document.onmousemove = function (event) {
-
         var x = -_x/2 + event.clientX;
         var y = -_y/2 + event.clientY;
         var angle = Math.atan2(y,x)/Math.PI*180;
