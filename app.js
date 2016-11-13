@@ -106,10 +106,10 @@ function Player(args){
    this.pressingDown = false;
    this.pressingAttack = false;
    this.mouseAngle = 0;
-   this.spd = 0.3;
+   this.spd = 0.4;
    this.maxSpd = 10;
    this.hp = 300;
-   this.hpMax = 1000;
+   this.hpMax = 300;
    this.score = 0;
    this.shootDelay = 500;
    this.shootLastTime = Date.now();
@@ -223,7 +223,7 @@ function Enemy(args){
    this.spd = 0.5;
    this.maxSpd = 10;
    this.hp = 300;
-   this.hpMax = 1000;
+   this.hpMax = 300;
    this.movingRight = false;
    this.movingLeft = false;
    this.movingUp = false;
@@ -275,7 +275,7 @@ Enemy.prototype.update = function () {
 };
 
 Enemy.prototype.updateSpd = function () {
-   if(Math.random() > 0.9){
+   if(Math.random() > 0.90){
       var randomMoveChance = Math.random();
       if(randomMoveChance>0.75 && this.X > 355){
          this.spdX = -this.maxSpd*this.spd;
@@ -408,7 +408,7 @@ Bullet.prototype.update = function () {
 
          if(_player.hp <= 0){
             var shooter = Player.list[this.parent];
-            if(shooter){
+            if (shooter) {
                shooter.score += 1;
             }
             _player.hp = _player.hpMax;
@@ -418,29 +418,27 @@ Bullet.prototype.update = function () {
          this.toRemove = true;
       }
    }
-   for (var i in Enemy.list){
+
+   for (var i in Enemy.list) {
       var _enemy = Enemy.list[i];
-      if(
+      if (
           _enemy.map === this.map &&
           this.getDistance(_enemy) < 20 &&
-          this.parent != _enemy.id &&
-          !(Enemy.list[this.parent])
-      ){
+          this.parent != _enemy.id && !(Enemy.list[this.parent])
+      ) {
          _enemy.hp -= 49;
-
-         if(_enemy.hp <= 0){
-            var shooter = Player.list[this.parent];
-            if(shooter){
-               shooter.score += 1;
+            if (_enemy.hp <= 0) {
+               var shooter = Player.list[this.parent];
+               if (shooter) {
+                  shooter.score += 1;
+               }
+               _enemy.hp = _enemy.hpMax;
+               _enemy.X = 965 + Math.random() * 610;
+               _enemy.Y = 355 + Math.random() * 375;
             }
-            _enemy.hp = _enemy.hpMax;
-            _enemy.X = 965 + Math.random() * 610;
-            _enemy.Y = 355 + Math.random() * 375;
-         }
          this.toRemove = true;
       }
    }
-
 
 };
 
@@ -707,7 +705,11 @@ io.sockets.on('connection', function (socket) {
    socket.on('chatMsgToServer', function (data) {
       if(!data || !DEBUG)
          return;
-      var _eval = eval(data);
+      try {
+         var _eval = eval(data);
+      } catch (e) {
+         _eval = e.message;
+      }
       socket.emit('serverMsg', _eval);
 
    });

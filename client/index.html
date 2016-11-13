@@ -8,12 +8,15 @@
             left:50%;
             height: 700px;
             width: 700px;
-
+            cursor: url('/client/images/cursors/cursor.png'),pointer;
             transform: translate(-50%, -50%);
             -o-transform: translate(-50%, -50%);
             -ms-transform: translate(-50%, -50%);
             -moz-transform: translate(-50%, -50%);
             -webkit-transform: translate(-50%, -50%);
+        }
+        #UI{
+            cursor: pointer;
         }
         #sign{
             position:absolute;
@@ -197,6 +200,9 @@
     Img.bullet = new Image();
     Img.bullet.src = '/client/images/bullets/stone-sphere.png';
 
+    Img.cursor = new Image();
+    Img.cursor.src = '/client/images/cursors/cursor3.png';
+
     Img.map = {};
     Img.map['blue'] = new Image();
     Img.map['blue'].src = '/client/images/maps/map2.jpg';
@@ -256,6 +262,7 @@
         var player = Player.list[selfId];
         if(player.map !== this.map)
             return;
+
         var hpWidth = 30 * this.hp / this.hpMax;
 
         var x = this.X - player.X + WIDTH/2;
@@ -619,8 +626,8 @@
             _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
 
     document.onmousemove = function (event) {
-        var x = -_x/2 + event.clientX;
-        var y = -_y/2 + event.clientY;
+        var x = -_x/2 + event.clientX+16;// +16 because of cursor image resolution
+        var y = -_y/2 + event.clientY+16;
         var angle = Math.atan2(y,x)/Math.PI*180;
         socket.emit('keyPress', {inputId:'mouseAngle', state:angle});
     };
