@@ -54,8 +54,8 @@ function extend(Child, Parent) {
 
 function Entity(args) {
    this.id = args.id;
-   this.X = args.x ||500;
-   this.Y = args.y ||500;
+   this.X = args.x ||355 + Math.random() * 1220;
+   this.Y = args.y ||355 + Math.random() * 375;
    this.spdX = 0;
    this.spdY = 0;
    this.map = args.map || 'blue';
@@ -203,6 +203,147 @@ Player.prototype.getUpdatePack = function () {
 
 
 
+// Enemy class with functions extends from Entity
+
+function Enemy(args){
+   Entity.call(this, args);
+   this.name = "enemy";
+   this.shootAngle = 0;
+   this.spd = 0.5;
+   this.maxSpd = 10;
+   this.hp = 1000;
+   this.hpMax = 1000;
+   this.movingRight = false;
+   this.movingLeft = false;
+   this.movingUp = false;
+   this.movingDown = false;
+   this.pressingAttack = true;
+   this.target = null;
+
+   Enemy.list[this.id] = this;
+
+   initPack.enemies.push(this.getInitPack());
+}
+
+// This global contains all players while game
+Enemy.list = {};
+var totalEnemies = 0;
+
+
+// create an inheritance between objects
+extend(Enemy, Entity);
+
+
+// functions for enemy object
+
+Enemy.prototype.update = function () {
+   this.updateSpd();
+   Entity.prototype.update.apply(this);
+   for (var i in Player.list) {
+      var _player = Player.list[i];
+      if(this.getDistance(_player) <= 250){
+         this.target = _player;
+         break;
+      } else {
+         this.target = null;
+      }
+   }
+
+   if(this.target){
+      this.shootAngle = Math.atan2(-this.target.X/2+this.X/2,this.target.Y/2-this.Y/2)/Math.PI*180+90;
+      this.shoot(this.shootAngle);
+   }
+
+};
+
+Enemy.prototype.updateSpd = function () {
+   if(Math.random() > 0.9){
+      var randomMoveChance = Math.random();
+      if(randomMoveChance>0.75 && this.X > 355){
+         this.spdX = -this.maxSpd*this.spd;
+         this.movingLeft = true;
+         this.movingRight = false;
+         this.movingUp = false;
+         this.movingDown = false;
+      }
+      else if(randomMoveChance>0.50 && this.X < 1570){
+         this.spdX = this.maxSpd*this.spd;
+         this.movingLeft = false;
+         this.movingRight = true;
+         this.movingUp = false;
+         this.movingDown = false;
+      }
+      else
+         this.spdX = 0;
+
+      if(randomMoveChance<0.50 && this.Y > 355){
+         this.spdY = -this.maxSpd*this.spd;
+         this.movingLeft = false;
+         this.movingRight = false;
+         this.movingUp = true;
+         this.movingDown = false;
+      }
+      else if(randomMoveChance<0.25 && this.Y < 730){
+         this.spdY = this.maxSpd*this.spd;
+         this.movingLeft = false;
+         this.movingRight = false;
+         this.movingUp = false;
+         this.movingDown = true;
+      }
+      else
+         this.spdY = 0;
+   }
+};
+
+Enemy.prototype.shoot = function (angle) {
+   new Bullet({
+      parent:this.id,
+      angle:angle,
+      x:this.X,
+      y:this.Y,
+      map:this.map
+   });
+};
+
+Enemy.prototype.getInitPack = function () {
+   return {
+      x     :  this.X,
+      y     :  this.Y,
+      id    :  this.id,
+      name  :  this.name,
+      hpMax :  this.hpMax,
+      hp    :  this.hp,
+      map   :  this.map
+   };
+};
+
+Enemy.prototype.getUpdatePack = function () {
+   return {
+      x     :  this.X,
+      y     :  this.Y,
+      id    :  this.id,
+      name  :  this.name,
+      hp    :  this.hp,
+      map   :  this.map,
+      movingLeft : this.movingLeft,
+      movingDown : this.movingDown,
+      movingRight : this.movingRight,
+      movingUp : this.movingUp
+   };
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Bullet class with functions. Extends from Entity
 
@@ -213,8 +354,8 @@ function Bullet(args){
    this.maxSpd = 10;
    this.speed = 2.5;
    this.angle = args.angle;
-   this.spdX = Math.cos(args.angle/180*Math.PI) * this.maxSpd * this.speed;
-   this.spdY = Math.sin(args.angle/180*Math.PI) * this.maxSpd * this.speed;
+   this.spdX = Math.cos(this.angle/180*Math.PI) * this.maxSpd * this.speed;
+   this.spdY = Math.sin(this.angle/180*Math.PI) * this.maxSpd * this.speed;
    this.toRemove = false;
    this.timer = 0;
 
@@ -253,12 +394,35 @@ Bullet.prototype.update = function () {
                shooter.score += 1;
             }
             _player.hp = _player.hpMax;
-            _player.X = 355 + Math.random() * 1220;
+            _player.X = 355 + Math.random() * 610;
             _player.Y = 355 + Math.random() * 375;
          }
          this.toRemove = true;
       }
    }
+   for (var i in Enemy.list){
+      var _enemy = Enemy.list[i];
+      if(
+          _enemy.map === this.map &&
+          this.getDistance(_enemy) < 20 &&
+          this.parent != _enemy.id &&
+          !(Enemy.list[this.parent])
+      ){
+         _enemy.hp -= 49;
+
+         if(_enemy.hp <= 0){
+            var shooter = Player.list[this.parent];
+            if(shooter){
+               shooter.score += 1;
+            }
+            _enemy.hp = _enemy.hpMax;
+            _enemy.X = 965 + Math.random() * 610;
+            _enemy.Y = 355 + Math.random() * 375;
+         }
+         this.toRemove = true;
+      }
+   }
+
 
 };
 
@@ -347,7 +511,8 @@ function onPlayerConnect(socket, name) {
    socket.emit('init', {
       selfId   : socket.id,
       players  : getAllPlayersInitPacks(),
-      bullets  : getAllBulletsInitPacks()
+      bullets  : getAllBulletsInitPacks(),
+      enemies  : getAllEnemiesInitPacks()
    })
 }
 
@@ -380,6 +545,40 @@ function getAllPlayersInitPacks() {
       players.push(Player.list[i].getInitPack());
    }
    return players;
+}
+
+
+
+
+// enemies updating
+
+function enemiesUpdate(){
+   if(Math.random() > 0.99 && totalEnemies <= 10){
+      new Enemy({
+         id:Math.random(),
+         map:Math.random()>0.5?'blue':'purple'
+      });
+      totalEnemies++;
+   }
+
+   var enemies = [];
+   for(var i in Enemy.list){
+      var enemy = Enemy.list[i];
+
+      enemy.update();
+
+      enemies.push(enemy.getUpdatePack());
+   }
+
+   return enemies;
+}
+
+function getAllEnemiesInitPacks() {
+   var enemies = [];
+   for(var i in Enemy.list){
+      enemies.push(Enemy.list[i].getInitPack());
+   }
+   return enemies;
 }
 
 
@@ -505,13 +704,14 @@ io.sockets.on('connection', function (socket) {
 
 
 // this handling for each single frame
-var initPack = {players:[],bullets:[]};
-var removePack = {players:[],bullets:[]};
+var initPack = {players:[],bullets:[],enemies:[]};
+var removePack = {players:[],bullets:[],enemies:[]};
 
 setInterval(function () {
    var pack = {
     players : playersUpdate(),
-    bullets : bulletsUpdate()
+    bullets : bulletsUpdate(),
+    enemies : enemiesUpdate()
    };
 
    for(var i in SOCKET_LIST){
@@ -523,8 +723,10 @@ setInterval(function () {
    // avoiding duplications
    initPack.players = [];     
    initPack.bullets = [];
+   initPack.enemies = [];
    removePack.players = [];
    removePack.bullets = [];
+   removePack.enemies = [];
 
 }, 40); // that means 25 times per second
 
