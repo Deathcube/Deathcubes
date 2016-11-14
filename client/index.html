@@ -15,9 +15,14 @@
             -moz-transform: translate(-50%, -50%);
             -webkit-transform: translate(-50%, -50%);
         }
-        #UI{
+        #user-interface{
+            position: absolute;
+        }
+        #user-interface>button {
             cursor: pointer;
         }
+
+
         #sign{
             position:absolute;
             top: 50%;
@@ -78,8 +83,8 @@
                 <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
                 <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
                 <div id="user-interface">
-                    <canvas id="field-ui" width="700" height="700" style="position: absolute"></canvas>
-                    <button onclick="changeMap()" style="position: absolute;bottom: 0px;left: 0px">Change Map</button>
+                    <canvas id="field-ui" width="700" height="700"></canvas>
+                    <button onclick="changeMap()" style="position: absolute;bottom: 675px;left: 610px">Change Map</button>
                 </div>
             </div>
             <div id="UI">
@@ -196,6 +201,13 @@
     Img.enemy['right'].src = '/client/images/ships/right.png';
     Img.enemy['left'].src = '/client/images/ships/left.png';
 
+    Img.skills = {};
+    Img.skills['fastShootingReady'] = new Image();
+    Img.skills['fastShootingActive'] = new Image();
+    Img.skills['fastShootingDisabled'] = new Image();
+    Img.skills['fastShootingReady'].src = '/client/images/skills/fastShootingReady.png';
+    Img.skills['fastShootingActive'].src = '/client/images/skills/fastShootingActive.png';
+    Img.skills['fastShootingDisabled'].src = '/client/images/skills/fastShootingDisabled.png';
 
     Img.bullet = new Image();
     Img.bullet.src = '/client/images/bullets/stone-sphere.png';
@@ -224,9 +236,11 @@
 
     function Entity(initPack) {
         this.id = initPack.id;
+
+        this.map = initPack.map;
+
         this.X = initPack.x;
         this.Y = initPack.y;
-        this.map = initPack.map;
     }
 
 
@@ -238,15 +252,28 @@
 
     function Player(initPack){
         Entity.call(this, initPack);
-        this.name = initPack.name;
+
+        this.abilityActivate = initPack.abilityActivate||false;
+        this.abilityActivated = initPack.abilityActivated||false;
+        this.abilityActivationTime = initPack.abilityActivationTime||0;
+        this.abilityActivationDelay = 15000;
+        this.abilityDuration = 5000;
+
         this.hp = initPack.hp;
         this.hpMax = initPack.hpMax;
-        this.score = initPack.score;
+
+        this.image = Img.player['up'];
+
+        this.name = initPack.name;
+
         this.pressingRight = false;
         this.pressingLeft = false;
         this.pressingUp = false;
         this.pressingDown = false;
-        this.image = Img.player['up'];
+
+        this.score = initPack.score;
+
+
 
         Player.list[initPack.id] = this;
     }
@@ -292,7 +319,24 @@
 
     };
 
+    Player.prototype.drawSkills = function () {
+        var player = Player.list[selfId];
 
+        var img = Img.skills['fastShootingReady'];
+
+        if(player.abilityActivated){
+            img = Img.skills['fastShootingActive'];
+            fieldUi.drawImage(img, 10, 620);
+            return;
+        }
+
+        if(Date.now()-player.abilityActivationTime > player.abilityActivationDelay){
+            fieldUi.drawImage(img, 10, 620);
+        } else {
+            img = Img.skills['fastShootingDisabled'];
+            fieldUi.drawImage(img, 10, 620);
+        }
+    };
 
 
 
@@ -424,59 +468,87 @@
 
     socket.on('update', function (data) {
         for(var i = 0; i < data.players.length; i++){
-            var pack_of_properties = data.players[i];
-            var player = Player.list[pack_of_properties.id];
+            var pop = data.players[i];
+            var player = Player.list[pop.id];
             if(player){
-                if (pack_of_properties.x !== undefined)
-                    player.X = pack_of_properties.x;
-                if (pack_of_properties.y !== undefined)
-                    player.Y = pack_of_properties.y;
-                if (pack_of_properties.hp !== undefined)
-                    player.hp = pack_of_properties.hp;
-                if (pack_of_properties.score !== undefined)
-                    player.score = pack_of_properties.score;
-                if (pack_of_properties.map !== undefined)
-                    player.map = pack_of_properties.map;
-                if (pack_of_properties.pressingLeft !== undefined)
-                    player.pressingLeft = pack_of_properties.pressingLeft;
-                if (pack_of_properties.pressingDown !== undefined)
-                    player.pressingDown = pack_of_properties.pressingDown;
-                if (pack_of_properties.pressingRight !== undefined)
-                    player.pressingRight = pack_of_properties.pressingRight;
-                if (pack_of_properties.pressingUp !== undefined)
-                    player.pressingUp = pack_of_properties.pressingUp;
+                if (pop.x !== undefined){
+                    player.X = pop.x;
+                }
+                if (pop.y !== undefined){
+                    player.Y = pop.y;
+                }
+                if (pop.hp !== undefined){
+                    player.hp = pop.hp;
+                }
+                if (pop.score !== undefined){
+                    player.score = pop.score;
+                }
+                if (pop.map !== undefined){
+                    player.map = pop.map;
+                }
+                if (pop.pressingLeft !== undefined){
+                    player.pressingLeft = pop.pressingLeft;
+                }
+                if (pop.pressingDown !== undefined){
+                    player.pressingDown = pop.pressingDown;
+                }
+                if (pop.pressingRight !== undefined){
+                    player.pressingRight = pop.pressingRight;
+                }
+                if (pop.pressingUp !== undefined){
+                    player.pressingUp = pop.pressingUp;
+                }
+                if (pop.abilityActivate !== undefined){
+                    player.abilityActivate = pop.abilityActivate;
+                }
+                if (pop.abilityActivated !== undefined){
+                    player.abilityActivated = pop.abilityActivated;
+                }
+                if (pop.abilityActivationTime !== undefined){
+                    player.abilityActivationTime = pop.abilityActivationTime;
+                }
             }
         }
         for(var i = 0; i < data.enemies.length; i++){
-            var pack_of_properties = data.enemies[i];
-            var enemy = Enemy.list[pack_of_properties.id];
+            var pop = data.enemies[i];
+            var enemy = Enemy.list[pop.id];
             if(enemy){
-                if (pack_of_properties.x !== undefined)
-                    enemy.X = pack_of_properties.x;
-                if (pack_of_properties.y !== undefined)
-                    enemy.Y = pack_of_properties.y;
-                if (pack_of_properties.hp !== undefined)
-                    enemy.hp = pack_of_properties.hp;
-                if (pack_of_properties.map !== undefined)
-                    enemy.map = pack_of_properties.map;
-                if (pack_of_properties.movingLeft !== undefined)
-                    enemy.movingLeft = pack_of_properties.movingLeft;
-                if (pack_of_properties.movingDown !== undefined)
-                    enemy.movingDown = pack_of_properties.movingDown;
-                if (pack_of_properties.movingRight !== undefined)
-                    enemy.movingRight = pack_of_properties.movingRight;
-                if (pack_of_properties.movingUp !== undefined)
-                    enemy.movingUp = pack_of_properties.movingUp;
+                if (pop.x !== undefined){
+                    enemy.X = pop.x;
+                }
+                if (pop.y !== undefined){
+                    enemy.Y = pop.y;
+                }
+                if (pop.hp !== undefined){
+                    enemy.hp = pop.hp;
+                }
+                if (pop.map !== undefined){
+                    enemy.map = pop.map;
+                }
+                if (pop.movingLeft !== undefined){
+                    enemy.movingLeft = pop.movingLeft;
+                }
+                if (pop.movingDown !== undefined){
+                    enemy.movingDown = pop.movingDown;
+                }
+                if (pop.movingRight !== undefined){
+                    enemy.movingRight = pop.movingRight;
+                }
+                if (pop.movingUp !== undefined){
+                    enemy.movingUp = pop.movingUp;
+                }
             }
         }
         for(var i = 0; i < data.bullets.length; i++){
-            var pack_of_properties = data.bullets[i];
-            var _bullet = Bullet.list[pack_of_properties.id];
+            var pop = data.bullets[i];
+            var _bullet = Bullet.list[pop.id];
             if(_bullet){
-                if (pack_of_properties.x !== undefined)
-                    _bullet.X = pack_of_properties.x;
-                if (pack_of_properties.y !== undefined)
-                    _bullet.Y = pack_of_properties.y;
+                if (pop.x !== undefined){
+                    _bullet.X = pop.x;
+                }
+                if (pop.y !== undefined){
+                    _bullet.Y = pop.y;
+                }
             }
         }
     });
@@ -512,6 +584,7 @@
     function drawScore() {
         if(lastScore === Player.list[selfId].score)
             return;
+
         lastScore = Player.list[selfId].score;
         fieldUi.clearRect(0,0,700,700);
         fieldUi.fillStyle = 'white';
@@ -540,6 +613,7 @@
 
         for(var i in Player.list){
             Player.list[i].draw();
+            Player.list[i].drawSkills();
         }
 
         for(var i in Enemy.list){
@@ -584,6 +658,10 @@
             player.pressingDown = false;
             player.pressingLeft = false;
             player.pressingUp = true;
+        }
+        else if(event.keyCode === 49) {
+            socket.emit('keyPress', {inputId: 'ability', state: true});
+            player.abilityActivate = true;
         }
     };
 
