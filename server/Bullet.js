@@ -4,7 +4,6 @@ var Entity = require('./Entity');
 var players = List.players;
 var enemies = List.enemies;
 var bullets = List.bullets;
-var initPack = List.initPack;
 
 // Bullet class with functions. Extends from Entity
 
@@ -18,6 +17,8 @@ function Bullet(args) {
     this.moveSpdMax = 10;
     this.moveSpd = 2.5;
 
+    this.new = true;
+
     this.parent = args.parent || null;
 
 
@@ -30,7 +31,6 @@ function Bullet(args) {
 
     bullets[this.id] = this;
 
-    initPack.bullets.push(this.getInitPack());
 }
 
 

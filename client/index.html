@@ -460,8 +460,21 @@
         for(var i = 0; i < data.bullets.length; i++){
             new Bullet(data.bullets[i]);
         }
+        console.log('init');
     });
 
+    socket.on('create_player', function (data) {
+        new Player(data);
+        console.log('create_player');
+    });
+    socket.on('create_bullet', function (data) {
+        new Bullet(data);
+        console.log('create_bullet');
+    });
+    socket.on('create_enemy', function (data) {
+        new Enemy(data);
+        console.log('create_enemy');
+    });
 
     // update pack
     // update the difference, so updating not all of the data
@@ -556,16 +569,16 @@
     // remove pack
     // removing procedure, so we sending an id
 
-    socket.on('remove', function (data) {
-        for(var i = 0; i < data.players.length; i++){
-            delete Player.list[data.players[i]];
-        }
-        for(var i = 0; i < data.bullets.length; i++){
-            delete Bullet.list[data.bullets[i]];
-        }
+    socket.on('remove_bullet', function (id) {
+        delete Bullet.list[id];
+        console.log('remove_bullet');
     });
 
-    
+    socket.on('remove_player', function (id) {
+        delete Player.list[id];
+        console.log('remove_player');
+    });
+
 
 
 

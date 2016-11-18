@@ -3,7 +3,6 @@ var Entity = require('./Entity');
 var Bullet = require('./Bullet');
 
 var players = List.players;
-var initPack = List.initPack;
 
 
 // Player class with functions extends from Entity
@@ -43,8 +42,6 @@ function Player(args) {
 
 
     players[this.id] = this;
-
-    initPack.players.push(this.getInitPack());
 }
 
 // create an inheritance between objects

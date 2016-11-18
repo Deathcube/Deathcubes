@@ -4,7 +4,6 @@ var Bullet = require('./Bullet');
 
 var players = List.players;
 var enemies = List.enemies;
-var initPack = List.initPack;
 
 // Enemy class with functions extends from Entity
 
@@ -35,8 +34,6 @@ function Enemy(args) {
 
 
     enemies[this.id] = this;
-
-    initPack.enemies.push(this.getInitPack());
 }
 
 
@@ -54,7 +51,10 @@ Enemy.prototype.update = function () {
 
     for (var i in players) {
         var player = players[i];
-        if (this.getDistance(player) <= 250) {
+        if (
+            this.getDistance(player) <= 250 &&
+            this.map === player.map
+        ) {
             this.target = player;
             break;
         } else {

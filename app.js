@@ -42,9 +42,6 @@ var Players = List.players;
 var Bullets = List.bullets;
 var Enemies = List.enemies;
 
-var initPack = List.initPack;
-var removePack = List.removePack;
-
 
 
 // server part for functions
@@ -97,14 +94,20 @@ function onPlayerConnect(socket, name) {
         players: getAllPlayersInitPacks(),
         bullets: getAllBulletsInitPacks(),
         enemies: getAllEnemiesInitPacks()
-    })
+    });
+
+    for (var i in List.sockets) {
+        var _socket = List.sockets[i];
+        _socket.emit('create_player', player.getInitPack());
+    }
+
 }
 
 // handle player disconnecting
 function onPlayerDisconnect(socket) {
     console.log("Player disconnected " + socket.id);
     delete Players[socket.id];
-    removePack.players.push(socket.id);
+    socket.emit('remove_player', socket.id)
 }
 
 
@@ -135,11 +138,12 @@ function getAllPlayersInitPacks() {
 // enemies updating
 
 function enemiesUpdate() {
-    if (Math.random() > 0.99 && totalEnemies <= 10) {
-        new Enemy({
+    if (Math.random() > 0.99 && totalEnemies <= 0) {
+        var e = new Enemy({
             id: Math.random(),
             map: Math.random() > 0.5 ? 'blue' : 'purple'
         });
+        io.emit('create_enemy', e.getInitPack());
         totalEnemies++;
     }
 
@@ -172,8 +176,11 @@ function bulletsUpdate() {
         var bullet = Bullets[i];
         if (bullet.toRemove) {
             delete Bullets[i];
-            removePack.bullets.push(bullet.id);
-        } else {
+            io.emit('remove_bullet', i);
+        } else if (bullet.new){
+            io.emit('create_bullet', bullet.getInitPack());
+            bullet.new = false;
+        }else{
             bullet.update();
 
             bullets.push(bullet.getUpdatePack());
@@ -190,6 +197,12 @@ function getAllBulletsInitPacks() {
     }
     return bullets;
 }
+
+
+
+
+
+
 
 
 // functions which works with database
@@ -294,34 +307,14 @@ setInterval(function () {
         bullets: bulletsUpdate(),
         enemies: enemiesUpdate()
     };
-    var _initPack = {
-        players: initPack.players,
-        bullets: initPack.bullets,
-        enemies: initPack.enemies
-    };
-    var _removePack = {
-        players: removePack.players,
-        bullets: removePack.bullets,
-        enemies: removePack.enemies
-    };
-
     for (var i in List.sockets) {
         var socket = List.sockets[i];
-
-        socket.emit('init', _initPack);
         socket.emit('update', _pack); //update
-        socket.emit('remove', _removePack);
     }
-    // avoiding duplications
-    _initPack.enemies = [];
-    _initPack.bullets = [];
-    _initPack.players = [];
-    _removePack.bullets = [];
-    _removePack.players = [];
-    _removePack.enemies = [];
 
 }, 40); // that means 25 times per second
 
+/*
 
 function startProfiling(duration) {
     profiler.startProfiling('1', true);
@@ -334,4 +327,4 @@ function startProfiling(duration) {
             console.log('profile saved');
         });
     }, duration);
-}
+}*/
