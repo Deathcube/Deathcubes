@@ -107,7 +107,10 @@ function onPlayerConnect(socket, name) {
 function onPlayerDisconnect(socket) {
     console.log("Player disconnected " + socket.id);
     delete Players[socket.id];
-    socket.emit('remove_player', socket.id)
+    for (var i in List.sockets) {
+        var _socket = List.sockets[i];
+        _socket.emit('remove_player', socket.id)
+    }
 }
 
 
@@ -210,7 +213,7 @@ function getAllBulletsInitPacks() {
 function userNameExist(data, cb) {
     db.accounts.find({username: data.username}, function (err, res) {
         if (res.length > 0) {
-            cb(true);
+            cb(res);
         } else {
             cb(false);
         }
@@ -220,7 +223,7 @@ function userNameExist(data, cb) {
 function isValidPassword(data, cb) {
     db.accounts.find({username: data.username, password: data.pass}, function (err, res) {
         if (res.length > 0) {
-            cb(true);
+            cb(res);
         } else {
             cb(false);
         }
@@ -228,7 +231,7 @@ function isValidPassword(data, cb) {
 }
 
 function addUser(data, cb) {
-    db.accounts.insert({username: data.username, password: data.pass}, function (err) {
+    db.accounts.insert({id:data.date, username: data.username, password: data.pass}, function (err) {
         cb();
     });
 }
@@ -240,13 +243,12 @@ var io = require('socket.io')(server, {});
 
 io.sockets.on('connection', function (socket) {
     // creating and adding a new socket connection
-    socket.id = Math.random(); // temporarily
-    List.sockets[socket.id] = socket;
-
-
     socket.on('signInPack', function (data) {
         isValidPassword(data, function (res) {
             if (res) {
+                console.log(res[0].id);
+                socket.id = res[0].id;
+                List.sockets[socket.id] = socket;
                 onPlayerConnect(socket, data.username);
                 socket.emit('signInResponse', {success: true});
             } else {
@@ -258,9 +260,14 @@ io.sockets.on('connection', function (socket) {
     socket.on('signUpPack', function (data) {
         userNameExist(data, function (res) {
             if (res) {
+                socket.id = res[0].id;
+                List.sockets[socket.id] = socket;
                 socket.emit('signUpResponse', {success: false});
             } else {
+                data.date = Date.now();
                 addUser(data, function () {
+                    socket.id = data.date;
+                    List.sockets[socket.id] = socket;
                     onPlayerConnect(socket, data.username);
                     socket.emit('signUpResponse', {success: true});
                 });
