@@ -7,7 +7,7 @@ var profiler = require('v8-profiler'); // this create profiler data
 var app = express();
 var server = require('http').Server(app);
 var fs = require('fs');
-var db = mongojs('mongodb://firstapplication:123@ds139937.mlab.com:39937/gamedb', ['accounts', 'progress']);
+var db = mongojs('mongodb://kirillleskin:123@ds050879.mlab.com:50879/superspace', ['accounts', 'progress']);
 
 // entities
 
