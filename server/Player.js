@@ -37,7 +37,7 @@ function Player(args) {
     this.score = 0;
 
     this.shootDelay = 500;
-    this.shootLastTime = Date.now();
+    this.shootLastTime = 0;
     this.shootCan = false;
 
 
