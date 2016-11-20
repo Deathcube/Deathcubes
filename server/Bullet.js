@@ -59,6 +59,7 @@ Bullet.prototype.update = function () {
             player.hp -= 49;
 
             if (player.hp <= 0) {
+                console.log(player.id);
                 shooter = players[this.parent];
                 if (shooter) {
                     shooter.score += 1;

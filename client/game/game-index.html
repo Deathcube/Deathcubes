@@ -71,14 +71,7 @@
     </style>
 </head>
     <body>
-        <div id="sign">
-            Username: <input id="sign-username" type="text"><br>
-            Password: <input id="sign-password" type="password"><br>
-            <button id="signIn">Sign In</button>
-            <button id="signUp">Sign Up</button>
-        </div>
-
-        <div id="game" style="display: none;">
+          <div id="game" style="display: none;">
             <div id="GameField" style="position: absolute">
                 <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
                 <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
@@ -135,38 +128,17 @@
         chatInput.value = '';
     };
 
+    var username = window.sessionStorage.getItem("username");
+    var password = window.sessionStorage.getItem("password");
 
+    socket.emit('signInPack', {username:username, pass:password});
     // login page
-
-    var sign = document.getElementById("sign");
-    var signIn = document.getElementById("signIn");
-    var signUp = document.getElementById("signUp");
-    var signUsername = document.getElementById("sign-username");
-    var signPass = document.getElementById("sign-password");
-
-    signIn.onclick = function () {
-        socket.emit('signInPack', {username:signUsername.value, pass:signPass.value});
-    };
     socket.on('signInResponse', function (data) {
       if (data.success){
-          sign.style.display = 'none';
+
           game.style.display = 'inline-block';
       } else
-          alert('Username or password didn\'t match :(');
-    });
-
-    signUp.onclick = function () {
-        if(signUsername.value && signPass.value)
-            socket.emit('signUpPack', {username:signUsername.value, pass:signPass.value});
-        else
-            alert('You should enter name and password');
-    };
-    socket.on('signUpResponse', function (data) {
-        if (data.success){
-            sign.style.display = 'none';
-            game.style.display = 'inline-block';
-        } else
-            alert('Sorry, but this username is already exist :(');
+          alert('Something went wrong :(');
     });
 
 
@@ -465,15 +437,12 @@
 
     socket.on('create_player', function (data) {
         new Player(data);
-        console.log('create_player');
     });
     socket.on('create_bullet', function (data) {
         new Bullet(data);
-        console.log('create_bullet');
     });
     socket.on('create_enemy', function (data) {
         new Enemy(data);
-        console.log('create_enemy');
     });
 
     // update pack
@@ -571,12 +540,10 @@
 
     socket.on('remove_bullet', function (id) {
         delete Bullet.list[id];
-        console.log('remove_bullet');
     });
 
     socket.on('remove_player', function (id) {
         delete Player.list[id];
-        console.log('remove_player');
     });
 
 
@@ -706,12 +673,18 @@
         socket.emit('keyPress', {inputId:'attack', state:false});
     };
 
+
     var w = window,
             d = document,
             e = d.documentElement,
             g = d.getElementsByTagName('body')[0],
             _x = w.innerWidth || e.clientWidth || g.clientWidth,
             _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+    window.onresize = function () {
+                _x = w.innerWidth || e.clientWidth || g.clientWidth,
+                _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+    };
 
     document.onmousemove = function (event) {
         var x = -_x/2 + event.clientX+16;// +16 because of cursor image resolution

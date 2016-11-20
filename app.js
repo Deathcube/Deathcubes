@@ -2,6 +2,7 @@
 var express = require('express'); // this help to find files in project
 var mongojs = require('mongojs'); // this works with database
 var profiler = require('v8-profiler'); // this create profiler data
+var $ = require("jquery");
 
 // this variables are main in application and use in general
 var app = express();
@@ -52,6 +53,7 @@ var totalEnemies = 0;
 
 // handle player connecting
 function onPlayerConnect(socket, name) {
+    console.log(socket.id);
     var map = 'blue';
     if (Math.random() > 0.5)
         map = 'purple';
@@ -141,7 +143,7 @@ function getAllPlayersInitPacks() {
 // enemies updating
 
 function enemiesUpdate() {
-    if (Math.random() > 0.99 && totalEnemies <= 0) {
+    if (Math.random() > 0.99 && totalEnemies <= 50) {
         var e = new Enemy({
             id: Math.random(),
             map: Math.random() > 0.5 ? 'blue' : 'purple'
@@ -244,9 +246,9 @@ var io = require('socket.io')(server, {});
 io.sockets.on('connection', function (socket) {
     // creating and adding a new socket connection
     socket.on('signInPack', function (data) {
+        console.log(socket.id.length);
         isValidPassword(data, function (res) {
             if (res) {
-                console.log(res[0].id);
                 socket.id = res[0].id;
                 List.sockets[socket.id] = socket;
                 onPlayerConnect(socket, data.username);
@@ -308,7 +310,9 @@ io.sockets.on('connection', function (socket) {
 // this handling for each single frame(1/25 sec)
 
 setInterval(function () {
+
     TIME++;
+    if(!(TIME%50)) console.log(List.players+" "+List.sockets);
     var _pack = {
         players: playersUpdate(),
         bullets: bulletsUpdate(),

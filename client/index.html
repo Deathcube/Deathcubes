@@ -1,31 +1,53 @@
 <html>
 <head>
+
+    <link rel="icon" type="image/gif/png" href="/client/images/logo.png">
     <style>
-        #GameField{
+        #content{
             position:absolute;
-            border:1px solid #000000;
+            text-align: center;
             top: 50%;
             left:50%;
-            height: 700px;
-            width: 700px;
-            cursor: url('/client/images/cursors/cursor.png'),pointer;
+            width: 500px;
+            height: 500px;
             transform: translate(-50%, -50%);
             -o-transform: translate(-50%, -50%);
             -ms-transform: translate(-50%, -50%);
             -moz-transform: translate(-50%, -50%);
             -webkit-transform: translate(-50%, -50%);
         }
-        #user-interface{
+        #content>img{
+            position:absolute;
+            top: 10%;
+            left:50%;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #sign-content{
+            position:absolute;
+            top: 50%;
+            left:50%;
+            width: 200px;
+            height: 160px;
+            border: solid black 1px;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #sign-content>button {
             position: absolute;
+            top:1%;
+            left:69%;
+            cursor: hand;
         }
-        #user-interface>button {
-            cursor: pointer;
-        }
-
-
         #sign{
             position:absolute;
-            top: 50%;
+            top: 55%;
             left:50%;
             transform: translate(-50%, -50%);
             -o-transform: translate(-50%, -50%);
@@ -33,691 +55,112 @@
             -moz-transform: translate(-50%, -50%);
             -webkit-transform: translate(-50%, -50%);
         }
-
-
-        #chat{
-            position:absolute;
-            border:1px solid #000000;
-            top: 60%;
-            left:5%;
-            transform: translate(-15%, -70%);
-            -o-transform: translate(-15%, -70%);
-            -ms-transform: translate(-15%, -70%);
-            -moz-transform: translate(-15%, -70%);
-            -webkit-transform: translate(-15%, -70%);
-            overflow-y: scroll;
+        #sign>input{
+            height: 25px;
+            margin-bottom: 10px;
+            border: solid 1px #dcdcdc;
+            transition: box-shadow 0.3s, border 0.3s;
         }
-        #chat-input{
-            border:1px solid #000000;
-            height: 20px;
-            width: 100%;
-
-        }
-        #chat-text{
-            height: 400px;
-            width: 300px;
-        }
-        #stat{
-            position:absolute;
-            border:1px solid #000000;
-            top: 40%;
-            left:80%;
-            transform: translate(-15%, -70%);
-            -o-transform: translate(-15%, -70%);
-            -ms-transform: translate(-15%, -70%);
-            -moz-transform: translate(-15%, -70%);
-            -webkit-transform: translate(-15%, -70%);
+        #sign>input:focus{
+            border: solid 1px #707070;
+            box-shadow: 0 0 5px 1px #969696;
         }
     </style>
 </head>
     <body>
-        <div id="sign">
-            Username: <input id="sign-username" type="text"><br>
-            Password: <input id="sign-password" type="password"><br>
-            <button id="signIn">Sign In</button>
+    <div id="content">
+        <img src="/client/images/logo.png" alt="supership" style="width:150px;height:150px;">
+        <div id="sign-content">
+            <form id="sign" action="" method="post">
+                Username: <input id="username" type="text"><br>
+                Password: <input id="password" type="password"><br>
+                <input type="submit" hidden="true">
+            </form>
             <button id="signUp">Sign Up</button>
         </div>
-
-        <div id="game" style="display: none;">
-            <div id="GameField" style="position: absolute">
-                <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
-                <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
-                <div id="user-interface">
-                    <canvas id="field-ui" width="700" height="700"></canvas>
-                    <button onclick="changeMap()" style="position: absolute;bottom: 675px;left: 610px">Change Map</button>
-                </div>
-            </div>
-            <div id="UI">
-                <div> Hello :)</div><br>
-                <div id="chat">
-                    <div id="chat-text"></div>
-
-                    <form id="chat-form">
-                        <input id="chat-input" type="text">
-                    </form>
-                </div>
-                <div id="stat">
-
-                </div>
-            </div>
-        </div>
+    </div>
     </body>
 </html>
 
 <!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
 <script src="/client/socket.io.js"></script>
+<script src="/client/jquery.js"></script>
 <script>
     var socket = io();//io.connect('http://localhost:2000');
-    var game = document.getElementById("game");
-    var WIDTH = 700;
-    var HEIGHT = 700;
-
-    // chat
-
-    var chatText = document.getElementById("chat-text");
-    var chatForm = document.getElementById("chat-form");
-    var chatInput = document.getElementById("chat-input");
-
-    socket.on('chatMsgSend', function (data) {
-        chatText.innerHTML += '<div>' + data + '</div>';
-    });
-    socket.on('serverMsg', function (data) {
-        console.log(data);
-    });
-
-    chatForm.onsubmit = function (e) {
-        e.preventDefault();
-        if(chatInput.value[0] === '/'){
-            socket.emit('chatMsgToServer', chatInput.value.slice(1));
-        }
-        else if (chatInput.value)
-            socket.emit('chatMsgToAll', chatInput.value);
-        chatInput.value = '';
-    };
-
 
     // login page
 
-    var sign = document.getElementById("sign");
-    var signIn = document.getElementById("signIn");
-    var signUp = document.getElementById("signUp");
-    var signUsername = document.getElementById("sign-username");
-    var signPass = document.getElementById("sign-password");
+    var username = null;
+    var password = null;
 
-    signIn.onclick = function () {
-        socket.emit('signInPack', {username:signUsername.value, pass:signPass.value});
-    };
-    socket.on('signInResponse', function (data) {
-      if (data.success){
-          sign.style.display = 'none';
-          game.style.display = 'inline-block';
-      } else
-          alert('Username or password didn\'t match :(');
+
+    $('#sign').on('submit', function (e) {
+        e.preventDefault();
+
+        username = $("#username").val();
+        password = $("#password").val();
+
+        if(!username || !password){
+            alert("Please, enter username and password");
+            return;
+        }
+        socket.emit('signInPack', {username:username, pass:password});
     });
 
-    signUp.onclick = function () {
-        if(signUsername.value && signPass.value)
-            socket.emit('signUpPack', {username:signUsername.value, pass:signPass.value});
-        else
+    socket.on('signInResponse', function (data) {
+      if (data.success){
+          window.sessionStorage.setItem("username", username);
+          window.sessionStorage.setItem("password", password);
+
+          var params = [
+              'height=' + screen.height,
+              'width=' + screen.width,
+              'fullscreen=yes', // only works in IE, but here for completeness
+              'menubar=no',
+              'toolbar=no',
+              'location=no',
+              'status=no'
+          ].join(',');
+           $("#content").html("Enjoy!");
+          window.open("/client/game/game-index.html", "SuperSpace", params);
+          window.close();
+      } else {
+          alert('Username or password didn\'t match :(');
+      }
+    });
+
+
+    $("#signUp").on("click", function () {
+        username = $("#username").val();
+        password = $("#password").val();
+
+        if(username && password){
+            socket.emit('signUpPack', {username:username, pass:password});
+        } else {
             alert('You should enter name and password');
-    };
+        }
+    });
+
     socket.on('signUpResponse', function (data) {
-        if (data.success){
-            sign.style.display = 'none';
-            game.style.display = 'inline-block';
+        if (data.success&& username && password){
+            var params = [
+                'height=' + screen.height,
+                'width=' + screen.width,
+                'fullscreen=yes', // only works in IE, but here for completeness
+                'menubar=no',
+                'toolbar=no',
+                'location=no',
+                'status=no'
+            ].join(',');
+            $("#content").html("Enjoy!");
+            var w = window.open("/client/game/game-index.html", "SuperSpace", params);
+            document.close();
         } else
             alert('Sorry, but this username is already exist :(');
     });
 
 
 
-    // UI
 
-    function changeMap() {
-        socket.emit('changeMap');
-    }
-
-
-    // Images
-
-    var Img = {};
-    Img.player = {};
-    Img.player['up'] = new Image();
-    Img.player['down'] = new Image();
-    Img.player['right'] = new Image();
-    Img.player['left'] = new Image();
-    Img.player['up'].src = '/client/images/ships/up.png';
-    Img.player['down'].src = '/client/images/ships/down.png';
-    Img.player['right'].src = '/client/images/ships/right.png';
-    Img.player['left'].src = '/client/images/ships/left.png';
-
-    Img.enemy = {};
-    Img.enemy['up'] = new Image();
-    Img.enemy['down'] = new Image();
-    Img.enemy['right'] = new Image();
-    Img.enemy['left'] = new Image();
-    Img.enemy['up'].src = '/client/images/ships/up.png';
-    Img.enemy['down'].src = '/client/images/ships/down.png';
-    Img.enemy['right'].src = '/client/images/ships/right.png';
-    Img.enemy['left'].src = '/client/images/ships/left.png';
-
-    Img.skills = {};
-    Img.skills['fastShootingReady'] = new Image();
-    Img.skills['fastShootingActive'] = new Image();
-    Img.skills['fastShootingDisabled'] = new Image();
-    Img.skills['fastShootingReady'].src = '/client/images/skills/fastShootingReady.png';
-    Img.skills['fastShootingActive'].src = '/client/images/skills/fastShootingActive.png';
-    Img.skills['fastShootingDisabled'].src = '/client/images/skills/fastShootingDisabled.png';
-
-    Img.bullet = new Image();
-    Img.bullet.src = '/client/images/bullets/stone-sphere.png';
-
-    Img.map = {};
-    Img.map['blue'] = new Image();
-    Img.map['blue'].src = '/client/images/maps/map2.jpg';
-    Img.map['purple'] = new Image();
-    Img.map['purple'].src = '/client/images/maps/map1.jpg';
-
-    // perfomance
-
-    var field = document.getElementById("field").getContext("2d");
-    var fieldUi = document.getElementById("field-ui").getContext("2d");
-    var user = document.getElementById("user").getContext("2d");
-
-    function extend(Child, Parent) {
-        var Temp = function(){};
-        Temp.prototype = Parent.prototype;
-        Child.prototype = new Temp();
-        Child.prototype.constructor = Child;
-    }
-
-
-    // an entity
-
-    function Entity(initPack) {
-        this.id = initPack.id;
-
-        this.map = initPack.map;
-
-        this.X = initPack.x;
-        this.Y = initPack.y;
-    }
-
-
-
-
-
-
-    // player
-
-    function Player(initPack){
-        Entity.call(this, initPack);
-
-        this.abilityActivate = initPack.abilityActivate||false;
-        this.abilityActivated = initPack.abilityActivated||false;
-        this.abilityActivationTime = initPack.abilityActivationTime||0;
-        this.abilityActivationDelay = 15000;
-        this.abilityDuration = 5000;
-
-        this.hp = initPack.hp;
-        this.hpMax = initPack.hpMax;
-
-        this.image = this.image || Img.player['up'];
-
-        this.name = initPack.name;
-
-        this.pressingRight = false;
-        this.pressingLeft = false;
-        this.pressingUp = false;
-        this.pressingDown = false;
-
-        this.score = initPack.score;
-
-
-
-        Player.list[initPack.id] = this;
-    }
-
-    Player.list = {};
-
-    extend(Player, Entity);
-
-    Player.prototype.draw = function () {
-        var player = Player.list[selfId];
-        if(player.map !== this.map)
-            return;
-
-        var hpWidth = 30 * this.hp / this.hpMax;
-
-        var x = this.X - player.X + WIDTH/2;
-        var y = this.Y - player.Y + HEIGHT/2;
-
-        user.fillStyle = 'red';
-        user.font = '20px Arial';
-        user.fillText(this.name, x-15, y - 35);
-        user.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
-
-        var playerImg = this.image;
-        if(this.pressingRight)
-            playerImg = Img.player['right'];
-        else if(this.pressingLeft)
-            playerImg = Img.player['left'];
-        else if(this.pressingUp)
-            playerImg = Img.player['up'];
-        else if(this.pressingDown)
-            playerImg = Img.player['down'];
-
-        this.image = playerImg;
-        var imgWidth = playerImg.width/15;
-        var imgHeight = playerImg.height/15;
-
-        user.drawImage(playerImg, 0, 0,
-                       playerImg.width, playerImg.height,
-                       x-imgWidth/2,y-imgHeight/2,
-                       imgWidth, imgHeight
-        );
-
-    };
-
-    Player.prototype.drawSkills = function () {
-        var player = Player.list[selfId];
-
-        var img = Img.skills['fastShootingReady'];
-
-        if(player.abilityActivated){
-            img = Img.skills['fastShootingActive'];
-            fieldUi.drawImage(img, 10, 620);
-            return;
-        }
-
-        if(Date.now()-player.abilityActivationTime > player.abilityActivationDelay){
-            fieldUi.drawImage(img, 10, 620);
-        } else {
-            img = Img.skills['fastShootingDisabled'];
-            fieldUi.drawImage(img, 10, 620);
-        }
-    };
-
-
-
-
-
-
-
-    // enemy
-
-    function Enemy(initPack){
-        Entity.call(this, initPack);
-        this.name = initPack.name;
-        this.hp = initPack.hp;
-        this.hpMax = initPack.hpMax;
-        this.movingRight = false;
-        this.movingLeft = false;
-        this.movingUp = false;
-        this.movingDown = false;
-        this.image = Img.enemy['up'];
-
-        Enemy.list[initPack.id] = this;
-    }
-
-    Enemy.list = {};
-
-    extend(Enemy, Entity);
-
-    Enemy.prototype.draw = function () {
-        var player = Player.list[selfId];
-        if(player.map !== this.map)
-            return;
-
-        var hpWidth = 30 * this.hp / this.hpMax;
-
-        var x = this.X - player.X + WIDTH/2;
-        var y = this.Y - player.Y + HEIGHT/2;
-
-        user.fillStyle = 'red';
-        user.font = '20px Arial';
-        user.fillText(this.name, x-15, y - 35);
-        user.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
-
-        var enemyImg = this.image;
-        if(this.movingRight)
-            enemyImg = Img.enemy['right'];
-        else if(this.movingLeft)
-            enemyImg = Img.enemy['left'];
-        else if(this.movingUp)
-            enemyImg = Img.enemy['up'];
-        else if(this.movingDown)
-            enemyImg = Img.enemy['down'];
-
-        this.image = enemyImg;
-        var imgWidth = enemyImg.width/15;
-        var imgHeight = enemyImg.height/15;
-
-        user.drawImage(enemyImg, 0, 0,
-                enemyImg.width, enemyImg.height,
-                x-imgWidth/2,y-imgHeight/2,
-                imgWidth, imgHeight
-        );
-
-    };
-
-
-
-
-
-
-
-
-
-
-    // bullet
-
-    function Bullet(initPack){
-        Entity.call(this, initPack);
-
-        Bullet.list[initPack.id] = this;
-    }
-
-    Bullet.list = {};
-
-    extend(Bullet, Entity);
-
-
-    Bullet.prototype.draw = function () {
-        if(Player.list[selfId].map !== this.map)
-            return;
-        var imgWidth = Img.bullet.width/2;
-        var imgHeight = Img.bullet.height/2;
-
-        var x = this.X - Player.list[selfId].X + WIDTH/2;
-        var y = this.Y - Player.list[selfId].Y + HEIGHT/2;
-
-
-        field.drawImage(Img.bullet, 0, 0,
-                Img.bullet.width, Img.bullet.height,
-                x-imgWidth/2,y-imgHeight/2,
-                imgWidth, imgHeight
-        );
-    };
-
-
-
-
-    // init pack
-    // when new player created - sending all the data
-
-
-    var selfId = null;
-    socket.on('init', function (data) {
-        if(data.selfId)
-            selfId = data.selfId;
-        for(var i = 0; i < data.players.length; i++){
-            new Player(data.players[i]);
-        }
-        for(var i = 0; i < data.enemies.length; i++){
-            new Enemy(data.enemies[i]);
-        }
-        for(var i = 0; i < data.bullets.length; i++){
-            new Bullet(data.bullets[i]);
-        }
-        console.log('init');
-    });
-
-    socket.on('create_player', function (data) {
-        new Player(data);
-        console.log('create_player');
-    });
-    socket.on('create_bullet', function (data) {
-        new Bullet(data);
-        console.log('create_bullet');
-    });
-    socket.on('create_enemy', function (data) {
-        new Enemy(data);
-        console.log('create_enemy');
-    });
-
-    // update pack
-    // update the difference, so updating not all of the data
-
-    socket.on('update', function (data) {
-        for(var i = 0; i < data.players.length; i++){
-            var pop = data.players[i];
-            var player = Player.list[pop.id];
-            if(player){
-                if (pop.x !== undefined){
-                    player.X = pop.x;
-                }
-                if (pop.y !== undefined){
-                    player.Y = pop.y;
-                }
-                if (pop.hp !== undefined){
-                    player.hp = pop.hp;
-                }
-                if (pop.score !== undefined){
-                    player.score = pop.score;
-                }
-                if (pop.map !== undefined){
-                    player.map = pop.map;
-                }
-                if (pop.pressingLeft !== undefined){
-                    player.pressingLeft = pop.pressingLeft;
-                }
-                if (pop.pressingDown !== undefined){
-                    player.pressingDown = pop.pressingDown;
-                }
-                if (pop.pressingRight !== undefined){
-                    player.pressingRight = pop.pressingRight;
-                }
-                if (pop.pressingUp !== undefined){
-                    player.pressingUp = pop.pressingUp;
-                }
-                if (pop.abilityActivate !== undefined){
-                    player.abilityActivate = pop.abilityActivate;
-                }
-                if (pop.abilityActivated !== undefined){
-                    player.abilityActivated = pop.abilityActivated;
-                }
-                if (pop.abilityActivationTime !== undefined){
-                    player.abilityActivationTime = pop.abilityActivationTime;
-                }
-            }
-        }
-        for(var i = 0; i < data.enemies.length; i++){
-            var pop = data.enemies[i];
-            var enemy = Enemy.list[pop.id];
-            if(enemy){
-                if (pop.x !== undefined){
-                    enemy.X = pop.x;
-                }
-                if (pop.y !== undefined){
-                    enemy.Y = pop.y;
-                }
-                if (pop.hp !== undefined){
-                    enemy.hp = pop.hp;
-                }
-                if (pop.map !== undefined){
-                    enemy.map = pop.map;
-                }
-                if (pop.movingLeft !== undefined){
-                    enemy.movingLeft = pop.movingLeft;
-                }
-                if (pop.movingDown !== undefined){
-                    enemy.movingDown = pop.movingDown;
-                }
-                if (pop.movingRight !== undefined){
-                    enemy.movingRight = pop.movingRight;
-                }
-                if (pop.movingUp !== undefined){
-                    enemy.movingUp = pop.movingUp;
-                }
-            }
-        }
-        for(var i = 0; i < data.bullets.length; i++){
-            var pop = data.bullets[i];
-            var _bullet = Bullet.list[pop.id];
-            if(_bullet){
-                if (pop.x !== undefined){
-                    _bullet.X = pop.x;
-                }
-                if (pop.y !== undefined){
-                    _bullet.Y = pop.y;
-                }
-            }
-        }
-    });
-
-    // remove pack
-    // removing procedure, so we sending an id
-
-    socket.on('remove_bullet', function (id) {
-        delete Bullet.list[id];
-        console.log('remove_bullet');
-    });
-
-    socket.on('remove_player', function (id) {
-        delete Player.list[id];
-        console.log('remove_player');
-    });
-
-
-
-
-
-
-    // useful functions
-    
-    function drawMap() {
-        var player = Player.list[selfId];
-        var x = WIDTH/2 - player.X;
-        var y = HEIGHT/2 - player.Y;
-        field.drawImage(Img.map[player.map],x,y);
-    }
-
-    var lastScore = null;
-    function drawScore() {
-        if(lastScore === Player.list[selfId].score)
-            return;
-
-        lastScore = Player.list[selfId].score;
-        fieldUi.clearRect(0,0,700,700);
-        fieldUi.fillStyle = 'white';
-        fieldUi.font = '30px Arial';
-        fieldUi.fillText('Kills: '+Player.list[selfId].score,0,30);
-    }
-
-    function drawPlayerProgress() {
-        var stat = '<table>';
-        for(var i in Player.list){
-            stat += Player.list[i].name + ' have ' + Player.list[i].score +'  kills<br>';
-        }
-        document.getElementById('stat').innerHTML = stat+'</table>';
-    }
-
-    // perform all the time
-
-    setInterval(function () {
-        if(!selfId)
-            return;
-        field.clearRect(0,0,700,700);
-        user.clearRect(0,0,700,700);
-        drawMap();
-        drawScore();
-        drawPlayerProgress();
-
-        for(var i in Player.list){
-            Player.list[i].draw();
-            Player.list[i].drawSkills();
-        }
-
-        for(var i in Enemy.list){
-            Enemy.list[i].draw();
-        }
-
-        for(var i in Bullet.list){
-            Bullet.list[i].draw();
-        }
-
-    }, 40); // 25 times per second
-
-    document.onkeydown = function (event) {
-        var player = Player.list[selfId];
-        if(event.keyCode === 68){
-            socket.emit('keyPress', {inputId:'right', state:true});
-            player.pressingRight = true;
-            player.pressingDown = false;
-            player.pressingLeft = false;
-            player.pressingUp = false;
-        }
-        else if(event.keyCode === 83){
-            socket.emit('keyPress', {inputId:'down', state:true});
-
-            player.pressingRight = false;
-            player.pressingDown = true;
-            player.pressingLeft = false;
-            player.pressingUp = false;
-        }
-        else if(event.keyCode === 65){
-            socket.emit('keyPress', {inputId:'left', state:true});
-
-            player.pressingRight = false;
-            player.pressingDown = false;
-            player.pressingLeft = true;
-            player.pressingUp = false;
-        }
-        else if(event.keyCode === 87){
-            socket.emit('keyPress', {inputId:'up', state:true});
-
-            player.pressingRight = false;
-            player.pressingDown = false;
-            player.pressingLeft = false;
-            player.pressingUp = true;
-        }
-        else if(event.keyCode === 49) {
-            socket.emit('keyPress', {inputId: 'ability', state: true});
-            player.abilityActivate = true;
-        }
-    };
-
-    document.onkeyup = function (event) {
-        var player = Player.list[selfId];
-        if(event.keyCode === 68){
-            socket.emit('keyPress', {inputId:'right', state:false});
-            player.pressingRight = false;
-        }
-        else if(event.keyCode === 83){
-            socket.emit('keyPress', {inputId:'down', state:false});
-            player.pressingDown = false;
-        }
-        else if(event.keyCode === 65){
-            socket.emit('keyPress', {inputId:'left', state:false});
-            player.pressingLeft = false;
-        }
-        else if(event.keyCode === 87) {
-            socket.emit('keyPress', {inputId: 'up', state: false});
-            player.pressingUp = false;
-        }
-    };
-
-    document.onmousedown = function (event) {
-        socket.emit('keyPress', {inputId:'attack', state:true});
-    };
-
-    document.onmouseup = function (event) {
-        socket.emit('keyPress', {inputId:'attack', state:false});
-    };
-
-    var w = window,
-            d = document,
-            e = d.documentElement,
-            g = d.getElementsByTagName('body')[0],
-            _x = w.innerWidth || e.clientWidth || g.clientWidth,
-            _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-
-    document.onmousemove = function (event) {
-        var x = -_x/2 + event.clientX+16;// +16 because of cursor image resolution
-        var y = -_y/2 + event.clientY+16;
-        var angle = Math.atan2(y,x)/Math.PI*180;
-        socket.emit('keyPress', {inputId:'mouseAngle', state:angle});
-    };
 
 </script>
