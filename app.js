@@ -141,7 +141,7 @@ function getAllPlayersInitPacks() {
 // enemies updating
 
 function enemiesUpdate() {
-    if (Math.random() > 0.99 && totalEnemies <= 0) {
+    if (Math.random() > 0.99 && totalEnemies <= 2000) {
         var e = new Enemy({
             id: Math.random(),
             map: Math.random() > 0.5 ? 'blue' : 'purple'

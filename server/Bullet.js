@@ -64,8 +64,8 @@ Bullet.prototype.update = function () {
                     shooter.score += 1;
                 }
                 player.hp = player.hpMax;
-                player.X = 355 + Math.random() * 610;
-                player.Y = 355 + Math.random() * 375;
+                player.X = 750 + Math.random() * 250;
+                player.Y = 350 + Math.random() * 250;
             }
             this.toRemove = true;
         }
@@ -81,14 +81,15 @@ Bullet.prototype.update = function () {
             !(enemies[this.parent])
         ) {
             enemy.hp -= 49;
+            shooter = players[this.parent];
+            enemy.target = shooter;
             if (enemy.hp <= 0) {
-                shooter = players[this.parent];
                 if (shooter) {
                     shooter.score += 1;
                 }
                 enemy.hp = enemy.hpMax;
-                enemy.X = 965 + Math.random() * 610;
-                enemy.Y = 355 + Math.random() * 375;
+                enemy.X = 1000 + Math.random() * 5495;
+                enemy.Y = 500 + Math.random() * 3160;
             }
             this.toRemove = true;
         }

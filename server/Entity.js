@@ -8,8 +8,8 @@ function Entity(args) {
     this.spdX = 0;
     this.spdY = 0;
 
-    this.X = args.x || 355 + Math.random() * 1220;
-    this.Y = args.y || 355 + Math.random() * 375;
+    this.X = args.x || 750 + Math.random() * 250;
+    this.Y = args.y || 355 + Math.random() * 250;
 }
 
 

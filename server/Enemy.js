@@ -10,27 +10,33 @@ var enemies = List.enemies;
 function Enemy(args) {
     Entity.call(this, args);
 
+    this.X = args.x || 1000 + Math.random() * 5495;
+    this.Y = args.y || 500 + Math.random() * 3160;
     this.hp = 300;
     this.hpMax = 300;
 
-    this.moveSpd = 0.5;
+    this.moveSpd = 0.2;
     this.moveSpdMax = 10;
 
+    this.moveDirection = null;
     this.movingRight = false;
     this.movingLeft = false;
     this.movingUp = false;
     this.movingDown = false;
 
-    this.name = "enemy";
+
+    this.name = "Pirate";
 
     this.pressingAttack = true;
 
     this.shootAngle = 0;
-    this.shootDelay = 500;
+    this.shootDelay = 700;
     this.shootLastTime = Date.now();
     this.shootCan = false;
 
     this.target = null;
+
+    this.timer = 0;
 
 
     enemies[this.id] = this;
@@ -44,7 +50,7 @@ Entity.prototype.extend(Enemy, Entity);
 // functions for enemy object
 
 Enemy.prototype.update = function () {
-
+    this.timer++;
     this.updateSpd();
 
     Entity.prototype.update.apply(this);
@@ -52,13 +58,11 @@ Enemy.prototype.update = function () {
     for (var i in players) {
         var player = players[i];
         if (
-            this.getDistance(player) <= 250 &&
+            this.getDistance(player) <= 450 &&
             this.map === player.map
         ) {
             this.target = player;
             break;
-        } else {
-            this.target = null;
         }
     }
 
@@ -66,7 +70,11 @@ Enemy.prototype.update = function () {
         this.shootCan = true :
         this.shootCan = false;
 
-    if (this.target && this.shootCan) {
+    if (this.target &&
+        this.map == this.target.map &&
+        this.shootCan &&
+        this.getDistance(this.target)<=750
+    ) {
         this.shootAngle =
             Math.atan2(
                 -this.target.X / 2 + this.X / 2,
@@ -79,42 +87,88 @@ Enemy.prototype.update = function () {
 };
 
 Enemy.prototype.updateSpd = function () {
-    if (Math.random() > 0.9) {
-        var randomMoveChance = Math.random();
-        if (randomMoveChance > 0.75 && this.X > 355) {
+    if(!this.target){
+        if(!(this.timer%70))
+            this.moveDirection = Math.random();
+
+        if (this.X > 755 && this.moveDirection > 0.75) {
             this.spdX = -this.moveSpdMax * this.moveSpd;
             this.movingLeft = true;
             this.movingRight = false;
+            return;
+        }else if (this.X < 6495 && this.moveDirection > 0.50) {
+            this.spdX = this.moveSpdMax * this.moveSpd;
+            this.movingLeft = false;
+            this.movingRight = true;
+            return;
+        }else{
+            this.spdX = 0;
+            this.movingLeft = false;
+            this.movingRight = false;
+        }
+
+        if (this.Y > 355 && this.moveDirection > 0.25) {
+            this.spdY = -this.moveSpdMax * this.moveSpd;
+            this.movingUp = true;
+            this.movingDown = false;
+            return;
+        }else if (this.Y < 3660 && this.moveDirection < 0.25) {
+            this.spdY = this.moveSpdMax * this.moveSpd;
+            this.movingUp = false;
+            this.movingDown = true;
+            return;
+        }else {
+            this.spdY = 0;
             this.movingUp = false;
             this.movingDown = false;
         }
-        else if (randomMoveChance > 0.50 && this.X < 1570) {
+
+    } else {
+        if(this.getDistance(this.target)>1250 &&
+            this.target.map === this.map
+        ){
+            this.target = null;
+            return;
+        }
+
+
+        if(this.X < this.target.X-250){
             this.spdX = this.moveSpdMax * this.moveSpd;
             this.movingLeft = false;
             this.movingRight = true;
             this.movingUp = false;
             this.movingDown = false;
-        }
-        else
-            this.spdX = 0;
-
-        if (randomMoveChance < 0.50 && this.Y > 355) {
-            this.spdY = -this.moveSpdMax * this.moveSpd;
+        } else if(this.X > this.target.X+250) {
+            this.spdX = -this.moveSpdMax * this.moveSpd;
+            this.movingLeft = true;
+            this.movingRight = false;
+            this.movingUp = false;
+            this.movingDown = false;
+        } else {
             this.movingLeft = false;
             this.movingRight = false;
-            this.movingUp = true;
-            this.movingDown = false;
+            this.spdX = 0;
         }
-        else if (randomMoveChance < 0.25 && this.Y < 730) {
+
+        if(this.Y < this.target.Y-250){
             this.spdY = this.moveSpdMax * this.moveSpd;
             this.movingLeft = false;
             this.movingRight = false;
             this.movingUp = false;
             this.movingDown = true;
-        }
-        else
+        } else if(this.Y > this.target.Y+250) {
+            this.spdY = -this.moveSpdMax * this.moveSpd;
+            this.movingLeft = false;
+            this.movingRight = false;
+            this.movingUp = true;
+            this.movingDown = false;
+        } else {
+            this.movingUp = false;
+            this.movingDown = false;
             this.spdY = 0;
+        }
     }
+
 };
 
 Enemy.prototype.shoot = function (angle) {

@@ -1,13 +1,83 @@
 <html>
 <head>
     <style>
+        body{
+            background-color: black;
+        }
+        #content {
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #content > img {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #sign-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 160px;
+            color:white;
+            border: solid white 1px;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #signUp {
+            position: absolute;
+            top: 1%;
+            left: 69%;
+            cursor: hand;
+        }
+        #sign {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+        #sign > input {
+            height: 25px;
+            margin-bottom: 10px;
+            border: solid 1px #dcdcdc;
+            transition: box-shadow 0.3s, border 0.3s;
+        }
+        #sign > input:focus {
+            border: solid 1px #00d5ad;
+            box-shadow: 0 0 5px 1px #25d500;
+        }
+        #play{
+            cursor: hand;
+        }
+
+
+
         #GameField{
             position:absolute;
-            border:1px solid #000000;
+            border:1px solid #ffffff;
             top: 50%;
             left:50%;
-            height: 700px;
-            width: 700px;
+            height: 600px;
+            width: 1100px;
             cursor: url('/client/images/cursors/cursor.png'),pointer;
             transform: translate(-50%, -50%);
             -o-transform: translate(-50%, -50%);
@@ -71,23 +141,30 @@
     </style>
 </head>
     <body>
-        <div id="sign">
-            Username: <input id="sign-username" type="text"><br>
-            Password: <input id="sign-password" type="password"><br>
-            <button id="signIn">Sign In</button>
-            <button id="signUp">Sign Up</button>
+        <div id="content">
+            <img src="/client/images/logo.png" alt="supership" style="width:150px;height:150px;">
+
+            <div id="sign-content">
+                <div id="sign">
+                    Username: <input id="username" type="text"><br>
+                    Password: <input id="password" type="password"><br>
+                    <button type="button" id="play">Play</button>
+                </div>
+
+                <button id="signUp">Sign Up</button>
+            </div>
         </div>
 
         <div id="game" style="display: none;">
             <div id="GameField" style="position: absolute">
-                <canvas id="field" width="700" height="700" style="position: absolute"></canvas>
-                <canvas id="user" width="700" height="700" style="position: absolute"></canvas>
+                <canvas id="field" width="1100" height="600" style="position: absolute"></canvas>
+                <canvas id="user" width="1100" height="600" style="position: absolute"></canvas>
                 <div id="user-interface">
-                    <canvas id="field-ui" width="700" height="700"></canvas>
-                    <button onclick="changeMap()" style="position: absolute;bottom: 675px;left: 610px">Change Map</button>
+                    <canvas id="field-ui" style="position: absolute" width="1100" height="600"></canvas>
+                    <button onclick="changeMap()" style="position: inherit;bottom: -25px;left:1020px">Teleport</button>
                 </div>
             </div>
-            <div id="UI">
+          <!--  <div id="UI">
                 <div> Hello :)</div><br>
                 <div id="chat">
                     <div id="chat-text"></div>
@@ -99,20 +176,23 @@
                 <div id="stat">
 
                 </div>
-            </div>
+            </div>-->
         </div>
     </body>
 </html>
 
 <!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
 <script src="/client/socket.io.js"></script>
+<script src="/client/jquery.js"></script>
 <script>
     var socket = io();//io.connect('http://localhost:2000');
-    var game = document.getElementById("game");
-    var WIDTH = 700;
-    var HEIGHT = 700;
+    var game = $("#game");
+    var WIDTH = 1100;
+    var HEIGHT = 600;
+
 
     // chat
+/*
 
     var chatText = document.getElementById("chat-text");
     var chatForm = document.getElementById("chat-form");
@@ -134,37 +214,40 @@
             socket.emit('chatMsgToAll', chatInput.value);
         chatInput.value = '';
     };
+*/
 
 
     // login page
 
-    var sign = document.getElementById("sign");
-    var signIn = document.getElementById("signIn");
-    var signUp = document.getElementById("signUp");
-    var signUsername = document.getElementById("sign-username");
-    var signPass = document.getElementById("sign-password");
+    var content = $("#content");
+    var sign = $("#sign");
+    var play = $("#play");
+    var signUp = $("#signUp");
+    var username = $("#username");
+    var password = $("#password");
 
-    signIn.onclick = function () {
-        socket.emit('signInPack', {username:signUsername.value, pass:signPass.value});
-    };
+
+    play.on("click", function () {
+        socket.emit('signInPack', {username:username.val(), pass:password.val()});
+    });
     socket.on('signInResponse', function (data) {
       if (data.success){
-          sign.style.display = 'none';
-          game.style.display = 'inline-block';
+          content.css("display", 'none');
+          game.css("display" ,'inline-block');
       } else
           alert('Username or password didn\'t match :(');
     });
 
-    signUp.onclick = function () {
-        if(signUsername.value && signPass.value)
-            socket.emit('signUpPack', {username:signUsername.value, pass:signPass.value});
+    signUp.on("click", function () {
+        if(username.val() && password.val())
+            socket.emit('signUpPack', {username:username.val(), pass:password.val()});
         else
             alert('You should enter name and password');
-    };
+    });
     socket.on('signUpResponse', function (data) {
         if (data.success){
-            sign.style.display = 'none';
-            game.style.display = 'inline-block';
+            content.css("display", 'none');
+            game.css("display" ,'inline-block');
         } else
             alert('Sorry, but this username is already exist :(');
     });
@@ -292,10 +375,10 @@
         var x = this.X - player.X + WIDTH/2;
         var y = this.Y - player.Y + HEIGHT/2;
 
-        user.fillStyle = 'red';
+        user.fillStyle = 'blue';
         user.font = '20px Arial';
         user.fillText(this.name, x-15, y - 35);
-        user.fillRect(x - hpWidth/2, y - 30, hpWidth, 3);
+        user.fillRect(x - hpWidth/2, y - 30, hpWidth, 2);
 
         var playerImg = this.image;
         if(this.pressingRight)
@@ -308,8 +391,8 @@
             playerImg = Img.player['down'];
 
         this.image = playerImg;
-        var imgWidth = playerImg.width/15;
-        var imgHeight = playerImg.height/15;
+        var imgWidth = playerImg.width/4.5;
+        var imgHeight = playerImg.height/4.5;
 
         user.drawImage(playerImg, 0, 0,
                        playerImg.width, playerImg.height,
@@ -326,15 +409,15 @@
 
         if(player.abilityActivated){
             img = Img.skills['fastShootingActive'];
-            fieldUi.drawImage(img, 10, 620);
+            fieldUi.drawImage(img, 10, 500);
             return;
         }
 
         if(Date.now()-player.abilityActivationTime > player.abilityActivationDelay){
-            fieldUi.drawImage(img, 10, 620);
+            fieldUi.drawImage(img, 10, 500);
         } else {
             img = Img.skills['fastShootingDisabled'];
-            fieldUi.drawImage(img, 10, 620);
+            fieldUi.drawImage(img, 10, 500);
         }
     };
 
@@ -390,8 +473,8 @@
             enemyImg = Img.enemy['down'];
 
         this.image = enemyImg;
-        var imgWidth = enemyImg.width/15;
-        var imgHeight = enemyImg.height/15;
+        var imgWidth = enemyImg.width/4.5;
+        var imgHeight = enemyImg.height/4.5;
 
         user.drawImage(enemyImg, 0, 0,
                 enemyImg.width, enemyImg.height,
@@ -460,20 +543,16 @@
         for(var i = 0; i < data.bullets.length; i++){
             new Bullet(data.bullets[i]);
         }
-        console.log('init');
     });
 
     socket.on('create_player', function (data) {
         new Player(data);
-        console.log('create_player');
     });
     socket.on('create_bullet', function (data) {
         new Bullet(data);
-        console.log('create_bullet');
     });
     socket.on('create_enemy', function (data) {
         new Enemy(data);
-        console.log('create_enemy');
     });
 
     // update pack
@@ -571,12 +650,10 @@
 
     socket.on('remove_bullet', function (id) {
         delete Bullet.list[id];
-        console.log('remove_bullet');
     });
 
     socket.on('remove_player', function (id) {
         delete Player.list[id];
-        console.log('remove_player');
     });
 
 
@@ -599,7 +676,7 @@
             return;
 
         lastScore = Player.list[selfId].score;
-        fieldUi.clearRect(0,0,700,700);
+        fieldUi.clearRect(0,0,WIDTH,HEIGHT);
         fieldUi.fillStyle = 'white';
         fieldUi.font = '30px Arial';
         fieldUi.fillText('Kills: '+Player.list[selfId].score,0,30);
@@ -618,11 +695,11 @@
     setInterval(function () {
         if(!selfId)
             return;
-        field.clearRect(0,0,700,700);
-        user.clearRect(0,0,700,700);
+        field.clearRect(0,0,WIDTH,HEIGHT);
+        user.clearRect(0,0,WIDTH,HEIGHT);
         drawMap();
         drawScore();
-        drawPlayerProgress();
+        //drawPlayerProgress();
 
         for(var i in Player.list){
             Player.list[i].draw();
@@ -640,6 +717,7 @@
     }, 40); // 25 times per second
 
     document.onkeydown = function (event) {
+        if(!selfId) return;
         var player = Player.list[selfId];
         if(event.keyCode === 68){
             socket.emit('keyPress', {inputId:'right', state:true});
@@ -673,12 +751,16 @@
             player.pressingUp = true;
         }
         else if(event.keyCode === 49) {
+            if(!player.abilityActivated &&
+            Date.now()-player.abilityActivationTime<player.abilityActivationDelay)
+                return;
             socket.emit('keyPress', {inputId: 'ability', state: true});
             player.abilityActivate = true;
         }
     };
 
     document.onkeyup = function (event) {
+        if(!selfId) return;
         var player = Player.list[selfId];
         if(event.keyCode === 68){
             socket.emit('keyPress', {inputId:'right', state:false});
@@ -699,10 +781,12 @@
     };
 
     document.onmousedown = function (event) {
+        if(!selfId) return;
         socket.emit('keyPress', {inputId:'attack', state:true});
     };
 
     document.onmouseup = function (event) {
+        if(!selfId) return;
         socket.emit('keyPress', {inputId:'attack', state:false});
     };
 
@@ -714,6 +798,7 @@
             _y = w.innerHeight|| e.clientHeight|| g.clientHeight;
 
     document.onmousemove = function (event) {
+        if(!selfId) return;
         var x = -_x/2 + event.clientX+16;// +16 because of cursor image resolution
         var y = -_y/2 + event.clientY+16;
         var angle = Math.atan2(y,x)/Math.PI*180;

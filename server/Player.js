@@ -19,11 +19,11 @@ function Player(args) {
     this.attackSpd = 1;
     this.attackSpdBase = 1;
 
-    this.hp = 300;
-    this.hpMax = 300;
+    this.hp = 650;
+    this.hpMax = 650;
 
     this.mouseAngle = 0;
-    this.moveSpd = 0.4;
+    this.moveSpd = 0.5;
     this.moveSpdMax = 10;
 
     this.name = args.name;
@@ -88,16 +88,16 @@ Player.prototype.update = function () {
 };
 
 Player.prototype.updateSpd = function () {
-    if (this.pressingLeft && this.X > 355)
+    if (this.pressingLeft && this.X > 755)
         this.spdX = -this.moveSpdMax * this.moveSpd;
-    else if (this.pressingRight && this.X < 1570)
+    else if (this.pressingRight && this.X < 6495)
         this.spdX = this.moveSpdMax * this.moveSpd;
     else
         this.spdX = 0;
 
     if (this.pressingUp && this.Y > 355)
         this.spdY = -this.moveSpdMax * this.moveSpd;
-    else if (this.pressingDown && this.Y < 730)
+    else if (this.pressingDown && this.Y < 3660)
         this.spdY = this.moveSpdMax * this.moveSpd;
     else
         this.spdY = 0;
