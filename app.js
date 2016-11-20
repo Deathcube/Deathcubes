@@ -8,8 +8,8 @@ var $ = require("jquery");
 var app = express();
 var server = require('http').Server(app);
 var fs = require('fs');
-var db = mongojs('mongodb://kirillleskin:123@ds050879.mlab.com:50879/superspace', ['accounts', 'progress']);
-
+var db = mongojs('localhost/gamedb', ['accounts', 'progress']);
+//var db = mongojs('mongodb://kirillleskin:123@ds050879.mlab.com:50879/superspace', ['accounts', 'progress']);
 // entities
 
 var List = require(__dirname+ '/server/List');
@@ -143,7 +143,7 @@ function getAllPlayersInitPacks() {
 // enemies updating
 
 function enemiesUpdate() {
-    if (Math.random() > 0.99 && totalEnemies <= 50) {
+    if (Math.random() > 0.99 && totalEnemies <= -1) {
         var e = new Enemy({
             id: Math.random(),
             map: Math.random() > 0.5 ? 'blue' : 'purple'
@@ -246,7 +246,6 @@ var io = require('socket.io')(server, {});
 io.sockets.on('connection', function (socket) {
     // creating and adding a new socket connection
     socket.on('signInPack', function (data) {
-        console.log(socket.id.length);
         isValidPassword(data, function (res) {
             if (res) {
                 socket.id = res[0].id;
@@ -312,7 +311,7 @@ io.sockets.on('connection', function (socket) {
 setInterval(function () {
 
     TIME++;
-    if(!(TIME%50)) console.log(List.players+" "+List.sockets);
+
     var _pack = {
         players: playersUpdate(),
         bullets: bulletsUpdate(),
@@ -326,6 +325,7 @@ setInterval(function () {
 }, 40); // that means 25 times per second
 
 /*
+startProfiling(15000);
 
 function startProfiling(duration) {
     profiler.startProfiling('1', true);
