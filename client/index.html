@@ -751,8 +751,7 @@
             player.pressingUp = true;
         }
         else if(event.keyCode === 49) {
-            if(!player.abilityActivated &&
-            Date.now()-player.abilityActivationTime<player.abilityActivationDelay)
+            if(!player.abilityActivated)
                 return;
             socket.emit('keyPress', {inputId: 'ability', state: true});
             player.abilityActivate = true;
