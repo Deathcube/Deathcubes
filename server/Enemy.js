@@ -58,7 +58,7 @@ Enemy.prototype.update = function () {
     for (var i in players) {
         var player = players[i];
         if (
-            this.getDistance(player) <= 450 &&
+            this.getDistance(player) <= 350 &&
             this.map === player.map
         ) {
             this.target = player;
