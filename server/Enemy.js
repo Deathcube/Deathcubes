@@ -73,7 +73,7 @@ Enemy.prototype.update = function () {
     if (this.target &&
         this.map == this.target.map &&
         this.shootCan &&
-        this.getDistance(this.target)<=750
+        this.getDistance(this.target)<=500
     ) {
         this.shootAngle =
             Math.atan2(
